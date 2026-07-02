@@ -1,4 +1,5 @@
 const HF_BASE = 'https://huggingface.co/datasets/willi19/object_processing/resolve/main/';
+const DATA_VERSION = '20260702-willi19-9aaa4ce-review-v9';
 
 // Pipeline stages the viewer can toggle between. `file` is relative to the
 // object dir on HuggingFace; `simplified` falls back to the legacy mesh.glb.
@@ -23,6 +24,31 @@ const AXIS_COLORS = [
   new BABYLON.Color3(0.36, 0.62, 0.95),
 ];
 
+function versionedDataUrl(path) {
+  const url = new URL(path, window.location.href);
+  if (url.origin === window.location.origin && !url.searchParams.has('v')) {
+    url.searchParams.set('v', DATA_VERSION);
+  }
+  return url.toString();
+}
+
+async function fetchJson(path, fallback = null) {
+  try {
+    const res = await fetch(versionedDataUrl(path), { cache: 'reload' });
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    return await res.json();
+  } catch (err) {
+    console.warn(`Could not load ${path}`, err);
+    return fallback;
+  }
+}
+
+function splitUrl(url) {
+  const i = url.lastIndexOf('/');
+  if (i < 0) return ['', url];
+  return [url.slice(0, i + 1), url.slice(i + 1)];
+}
+
 (async function () {
   const params = new URLSearchParams(window.location.search);
   const objectId = params.get('id');
@@ -33,13 +59,20 @@ const AXIS_COLORS = [
   const useLocal = params.get('local') === '1';
   const assetBase = (useLocal ? '' : HF_BASE) + 'objects/' + objectId + '/';
 
-  let catalog;
-  try {
-    catalog = await (await fetch('catalog.json')).json();
-  } catch (e) { showError('Failed to load catalog.'); return; }
+  const catalog = await fetchJson('catalog.json', null);
+  if (!catalog) { showError('Failed to load catalog.'); return; }
 
-  const obj = catalog.objects.find(o => o.id === objectId);
+  const obj = (catalog.objects || []).find(o => o.id === objectId);
   if (!obj) { showError(`Object "${objectId}" not found in catalog.`); return; }
+
+  const textureManifest = await fetchJson('texture_overrides/manifest.json', { objects: {} });
+  const textureOverride = (textureManifest.objects || {})[objectId] || null;
+  const catalogMesh = obj.url && !obj.url.startsWith('objects/') ? obj.url : '';
+  const replacementMeshUrl = (textureOverride && textureOverride.mesh) || catalogMesh;
+  const texturedStage = replacementMeshUrl
+    ? { ...MESH_STAGE, label: 'Textured scan', url: replacementMeshUrl }
+    : MESH_STAGE;
+  const stageOptions = replacementMeshUrl ? [...STAGES, texturedStage] : STAGES;
 
   document.getElementById('obj-label').textContent = obj.label;
   document.title = `${obj.label} - Object Viewer`;
@@ -63,9 +96,7 @@ const AXIS_COLORS = [
 
   // Overlay metadata (OBB / symmetry / tabletop), served locally. Optional.
   let info = null;
-  try {
-    info = await (await fetch(`objects/${objectId}/info.json`)).json();
-  } catch (e) { /* overlays simply stay disabled */ }
+  info = await fetchJson(`objects/${objectId}/info.json`, null);
 
   // ── Babylon scene ──────────────────────────────────────────────────────────
   const canvas = document.getElementById('renderCanvas');
@@ -108,8 +139,9 @@ const AXIS_COLORS = [
 
   // State shared across stage loads.
   let currentContainer = null;
-  let selectedStage = DEFAULT_STAGE;  // stage the user picked via the radios
+  let selectedStage = replacementMeshUrl ? texturedStage : DEFAULT_STAGE;  // stage the user picked via the radios
   let loadedStageId = null;           // id of the stage actually in the scene
+  let loadedFromReplacement = false;
   let currentRoot = null;          // glTF __root__ node; overlays parent here
   let standWrap = null;            // wraps currentRoot with the standing pose
   let floorMesh = null;            // ground plane under the standing object
@@ -126,6 +158,32 @@ const AXIS_COLORS = [
     }
   }
 
+  async function loadStageContainer(stage) {
+    const candidates = [];
+    if (stage.url) candidates.push({ url: stage.url });
+    candidates.push({ root: assetBase, file: stage.file });
+    if (stage.fallback && stage.fallback !== stage.file) {
+      candidates.push({ root: assetBase, file: stage.fallback });
+    }
+
+    let lastError = null;
+    for (const spec of candidates) {
+      try {
+        if (spec.url) {
+          const [rootUrl, file] = splitUrl(versionedDataUrl(spec.url));
+          const container = await BABYLON.SceneLoader.LoadAssetContainerAsync(rootUrl, file, scene);
+          return { container, href: spec.url, replacement: true };
+        }
+        const container = await BABYLON.SceneLoader.LoadAssetContainerAsync(spec.root, spec.file, scene);
+        return { container, href: spec.root + spec.file, replacement: false };
+      } catch (err) {
+        lastError = err;
+        console.warn(`mesh load failed for ${objectId}`, spec, err);
+      }
+    }
+    throw lastError || new Error('No mesh URL loaded');
+  }
+
   async function loadStage(stage) {
     document.getElementById('loading').style.display = '';
     document.getElementById('error').style.display = 'none';
@@ -134,26 +192,19 @@ const AXIS_COLORS = [
     if (floorMesh) { floorMesh.dispose(); floorMesh = null; }
     if (currentContainer) { currentContainer.dispose(); currentContainer = null; }
 
-    let file = stage.file;
-    try {
-      currentContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync(assetBase, file, scene);
-    } catch (e) {
-      if (stage.fallback) {
-        file = stage.fallback;
-        currentContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync(assetBase, file, scene);
-      } else { throw e; }
-    }
+    const loaded = await loadStageContainer(stage);
+    currentContainer = loaded.container;
     currentContainer.addAllToScene();
     loadedStageId = stage.id;
-    currentRoot = scene.getTransformNodeByName('__root__')
-      || currentContainer.transformNodes.find(n => n.name === '__root__')
-      || currentContainer.meshes.find(m => m.name === '__root__');
+    loadedFromReplacement = loaded.replacement;
+    currentRoot = contentRoot(currentContainer);
 
+    applyReplacementScale();
     applyStandingPose();   // rotate the object upright onto the floor
     rebuildFloor();
     fitCamera(currentContainer);
     rebuildOverlays();
-    document.getElementById('download-link').href = assetBase + file;
+    document.getElementById('download-link').href = loaded.href;
     document.getElementById('download-link').style.display = '';
     document.getElementById('loading').style.display = 'none';
   }
@@ -173,6 +224,30 @@ const AXIS_COLORS = [
     camera.radius = max.subtract(min).length() * 1.4;
   }
   function fitCamera(container) { fitMeshes(container.meshes); }
+
+  function contentRoot(container) {
+    const explicit = scene.getTransformNodeByName('__root__')
+      || container.transformNodes.find(n => n.name === '__root__')
+      || container.meshes.find(m => m.name === '__root__');
+    if (explicit) return explicit;
+
+    const root = new BABYLON.TransformNode('asset_root', scene);
+    const topNodes = [
+      ...container.transformNodes.filter(n => !n.parent && n !== root),
+      ...container.meshes.filter(m => !m.parent),
+    ];
+    topNodes.forEach(n => { n.parent = root; });
+    return root;
+  }
+
+  function applyReplacementScale() {
+    if (!loadedFromReplacement || !currentRoot || !textureOverride || !info || !info.obb) return;
+    const sourceExtents = textureOverride.source_extents_mm || [];
+    const sourceMax = Math.max(...sourceExtents.map(v => v * 0.001));
+    const targetMax = Math.max(...info.obb.extents);
+    if (!Number.isFinite(sourceMax) || sourceMax <= 0 || !Number.isFinite(targetMax) || targetMax <= 0) return;
+    currentRoot.scaling.scaleInPlace(targetMax / sourceMax);
+  }
 
   // ── Overlays (built in object frame, parented to __root__) ─────────────────
   // Row-major 4x4 (numpy) -> Babylon Matrix (column-major) is a transpose.
@@ -347,7 +422,7 @@ const AXIS_COLORS = [
   // out on a grid over a shared floor at table level (z = 0). Each pose matrix
   // (object -> table) plus a grid offset goes straight onto an instance root.
   function buildTabletop() {
-    if (!info || !info.tabletop_poses || !info.tabletop_poses.length || !currentContainer) return null;
+    if (!info || !info.tabletop_poses || !info.tabletop_poses.length || !currentContainer || !currentRoot) return null;
     const e = info.obb ? info.obb.extents : [0.1, 0.1, 0.1];
     const n = info.tabletop_poses.length;
     const cols = Math.ceil(Math.sqrt(n));
@@ -402,7 +477,7 @@ const AXIS_COLORS = [
   // actually changes; loadStage() rebuilds the overlays on the way out.
   async function syncMesh() {
     if (compareOn) { rebuildOverlays(); return; }
-    const want = (shown.symmetry || shown.tabletop) ? MESH_STAGE : selectedStage;
+    const want = (shown.symmetry || shown.tabletop) ? texturedStage : selectedStage;
     if (loadedStageId === want.id) { rebuildOverlays(); return; }
     await loadStage(want);
   }
@@ -541,10 +616,10 @@ const AXIS_COLORS = [
   }
 
   // ── Controls ───────────────────────────────────────────────────────────────
-  buildControls(STAGES, info, selectStage, toggleOverlay, actions);
+  buildControls(stageOptions, info, selectStage, toggleOverlay, actions, selectedStage.id);
 
   try {
-    await loadStage(DEFAULT_STAGE);  // default: simplified
+    await loadStage(selectedStage);
     setView('iso');
     await applyUrlState();
   } catch (e) {
@@ -559,7 +634,7 @@ const AXIS_COLORS = [
   window.addEventListener('resize', () => engine.resize());
 })();
 
-function buildControls(stages, info, onStage, onOverlay, actions) {
+function buildControls(stages, info, onStage, onOverlay, actions, activeStageId) {
   const panel = document.getElementById('controls');
   if (!panel) return;
   actions = actions || {};
@@ -572,7 +647,8 @@ function buildControls(stages, info, onStage, onOverlay, actions) {
     const id = 'stage-' + s.id;
     const lab = document.createElement('label');
     lab.className = 'ctl-radio';
-    lab.innerHTML = `<input type="radio" name="stage" id="${id}" ${i === stages.length - 1 ? 'checked' : ''}> ${s.label}`;
+    const checked = activeStageId ? s.id === activeStageId : i === stages.length - 1;
+    lab.innerHTML = `<input type="radio" name="stage" id="${id}" ${checked ? 'checked' : ''}> ${s.label}`;
     const input = lab.querySelector('input');
     input.addEventListener('change', () => onStage(s));
     stageInputs.push(input);

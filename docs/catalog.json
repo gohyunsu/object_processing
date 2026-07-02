@@ -368,7 +368,7 @@
       "id": "paper_bowl",
       "label": "Paper Bowl",
       "category": "",
-      "url": "objects/paper_bowl/mesh.glb",
+      "url": "texture_overrides/paper_bowl/mesh.glb",
       "thumb": "objects/paper_bowl/thumb.png"
     },
     {
@@ -382,7 +382,7 @@
       "id": "paper_cup",
       "label": "Paper Cup",
       "category": "",
-      "url": "objects/paper_cup/mesh.glb",
+      "url": "texture_overrides/paper_cup/mesh.glb",
       "thumb": "objects/paper_cup/thumb.png"
     },
     {
@@ -396,7 +396,7 @@
       "id": "pepper_tuna",
       "label": "Pepper Tuna",
       "category": "",
-      "url": "objects/pepper_tuna/mesh.glb",
+      "url": "texture_overrides/pepper_tuna/mesh.glb",
       "thumb": "objects/pepper_tuna/thumb.png"
     },
     {
@@ -550,14 +550,14 @@
       "id": "tea_case",
       "label": "Tea Case",
       "category": "",
-      "url": "objects/tea_case/mesh.glb",
+      "url": "texture_overrides/tea_case/mesh.glb",
       "thumb": "objects/tea_case/thumb.png"
     },
     {
       "id": "tennis_ball",
       "label": "Tennis Ball",
       "category": "",
-      "url": "objects/tennis_ball/mesh.glb",
+      "url": "texture_overrides/tennis_ball/mesh.glb",
       "thumb": "objects/tennis_ball/thumb.png"
     },
     {
@@ -571,7 +571,7 @@
       "id": "tissue_box",
       "label": "Tissue Box",
       "category": "",
-      "url": "objects/tissue_box/mesh.glb",
+      "url": "texture_overrides/tissue_box/mesh.glb",
       "thumb": "objects/tissue_box/thumb.png"
     },
     {
