@@ -362,6 +362,17 @@
     box-shadow: 0 0 0 3px var(--accent-soft);
   }
 
+  .object-note[readonly] {
+    background: #f1f5f9;
+    color: #64748b;
+    cursor: default;
+  }
+
+  .object-note[readonly]:focus {
+    border-color: var(--line);
+    box-shadow: none;
+  }
+
   .meta-links {
     display: flex;
     flex-wrap: wrap;
@@ -555,6 +566,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/babylonjs@7.34.3/babylon.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/babylonjs-loaders@7.34.3/babylonjs.loaders.min.js"></script>
-  <script src="js/audit.js?v=20260702-willi19-9aaa4ce-review-v9"></script>
+  <script src="js/audit.js?v=20260702-willi19-9aaa4ce-review-v10"></script>
 </body>
 </html>

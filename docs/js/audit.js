@@ -1,5 +1,5 @@
 const HF_BASE = 'https://huggingface.co/datasets/willi19/object_processing/resolve/main/';
-const DATA_VERSION = '20260702-willi19-9aaa4ce-review-v9';
+const DATA_VERSION = '20260702-willi19-9aaa4ce-review-v10';
 const REVIEW_DB_KEY = 'object_processing.audit.review_versions.v1';
 const REVIEW_DRAFT_KEY = 'object_processing.audit.review_draft.v1';
 const REVIEW_MANIFEST_PATH = 'reviews/manifest.json';
@@ -138,6 +138,7 @@ function getObjectNote(id) {
 }
 
 function setObjectNote(id, note) {
+  if (!state.auditMode) return;
   const raw = String(note || '');
   if (raw.trim()) state.objectNotes.set(id, raw);
   else state.objectNotes.delete(id);
@@ -153,6 +154,17 @@ function totalObjectNotes() {
 
 function isRowReviewMarked(id) {
   return flaggedPoseCount(id) > 0 || !!getObjectNote(id);
+}
+
+function syncNoteInputMode(input) {
+  if (!input) return;
+  input.readOnly = !state.auditMode;
+  input.setAttribute('aria-readonly', String(!state.auditMode));
+  input.title = state.auditMode ? 'Object note' : 'Enable Audit mode to edit notes';
+}
+
+function refreshNoteInputModes() {
+  els.rows.querySelectorAll('[data-object-note]').forEach(syncNoteInputMode);
 }
 
 function reviewPayload(name = reviewVersionName()) {
@@ -389,6 +401,7 @@ function updateRowReviewBadges(id) {
 
   const noteInput = rowEl.querySelector('[data-object-note]');
   if (noteInput && noteInput.value !== note) noteInput.value = note;
+  syncNoteInputMode(noteInput);
 
   const row = state.rows.find((r) => r.id === id);
   const summary = rowEl.querySelector('[data-tabletop-summary]');
@@ -403,6 +416,7 @@ function refreshReviewState(changedId = null) {
 
   if (changedId) updateRowReviewBadges(changedId);
   else state.rows.forEach((row) => updateRowReviewBadges(row.id));
+  refreshNoteInputModes();
 
   state.active.forEach((scenes) => {
     if (scenes.tabletop) scenes.tabletop.applyReviewSelections();
@@ -436,10 +450,11 @@ async function init() {
   buildSymmetryFilter(rows);
   bindControls();
   const draftName = cleanReviewName(draft && draft.version);
-  if (state.defaultBundledReview && (!draft || !draftName)) {
+  if (state.defaultBundledReview && (!draft || draftName !== state.defaultBundledReview)) {
     await loadBundledReview(state.defaultBundledReview, { dirty: false });
   } else if (draft) {
     loadReviewPayload(draft, { dirty: true });
+    if (draftName && state.bundledReviews[draftName]) selectReviewOption('bundled', draftName);
   }
   applyInitialParams();
   renderRows();
@@ -627,6 +642,7 @@ function renderRow(row) {
     </section>
   `;
   const noteInput = article.querySelector('[data-object-note]');
+  syncNoteInputMode(noteInput);
   noteInput.addEventListener('input', () => setObjectNote(row.id, noteInput.value));
   return article;
 }
