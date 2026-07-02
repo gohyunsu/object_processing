@@ -320,6 +320,7 @@ class AuditScene {
     this.container = null;
     this.root = null;
     this.resizeObserver = null;
+    this.eventCleanups = [];
     this.disposed = false;
     this.loadedFromTextureOverride = false;
   }
@@ -335,6 +336,7 @@ class AuditScene {
       this.scene = new BABYLON.Scene(this.engine);
       this.scene.useRightHandedSystem = true;
       this.scene.clearColor = new BABYLON.Color4(0.055, 0.078, 0.106, 1);
+      this.bindCanvasInput();
       this.setupCameraAndLights();
 
       this.container = await this.loadContainer();
@@ -383,6 +385,39 @@ class AuditScene {
     hemi.intensity = 0.85;
     const dir = new BABYLON.DirectionalLight(`${this.kind}_dir`, new BABYLON.Vector3(-1, -1.4, -0.9), this.scene);
     dir.intensity = 0.55;
+  }
+
+  bindCanvasInput() {
+    this.canvas.style.touchAction = 'none';
+    this.canvas.style.overscrollBehavior = 'contain';
+    this.canvas.style.userSelect = 'none';
+
+    const preventDefault = (event) => event.preventDefault();
+    const preventDragScroll = (event) => {
+      if (event.pointerType === 'touch' || event.pointerType === 'pen' || event.buttons) {
+        event.preventDefault();
+      }
+    };
+    const capturePointer = (event) => {
+      preventDragScroll(event);
+      if (this.canvas.setPointerCapture && event.pointerId != null) {
+        try { this.canvas.setPointerCapture(event.pointerId); } catch (err) { /* pointer already released */ }
+      }
+    };
+
+    const listeners = [
+      ['wheel', preventDefault, { passive: false }],
+      ['touchstart', preventDefault, { passive: false }],
+      ['touchmove', preventDefault, { passive: false }],
+      ['pointerdown', capturePointer, { passive: false }],
+      ['pointermove', preventDragScroll, { passive: false }],
+      ['contextmenu', preventDefault, false],
+    ];
+
+    listeners.forEach(([type, handler, options]) => {
+      this.canvas.addEventListener(type, handler, options);
+      this.eventCleanups.push(() => this.canvas.removeEventListener(type, handler, options));
+    });
   }
 
   async loadContainer() {
@@ -639,6 +674,8 @@ class AuditScene {
   dispose(resetStatus = true) {
     this.disposed = true;
     if (this.resizeObserver) this.resizeObserver.disconnect();
+    this.eventCleanups.forEach((cleanup) => cleanup());
+    this.eventCleanups = [];
     if (this.engine) this.engine.stopRenderLoop();
     if (this.scene) this.scene.dispose();
     if (this.engine) this.engine.dispose();
