@@ -1,5 +1,5 @@
 const HF_BASE = 'https://huggingface.co/datasets/willi19/object_processing/resolve/main/';
-const DATA_VERSION = '20260702-willi19-9aaa4ce-review-v3';
+const DATA_VERSION = '20260702-willi19-9aaa4ce-review-v4';
 const REVIEW_DB_KEY = 'object_processing.audit.review_versions.v1';
 const REVIEW_DRAFT_KEY = 'object_processing.audit.review_draft.v1';
 const REVIEW_MANIFEST_PATH = 'reviews/manifest.json';
@@ -141,6 +141,10 @@ function setObjectNote(id, note) {
 
 function totalObjectNotes() {
   return state.objectNotes.size;
+}
+
+function isRowReviewMarked(id) {
+  return flaggedPoseCount(id) > 0 || !!getObjectNote(id);
 }
 
 function reviewPayload(name = reviewVersionName()) {
@@ -350,6 +354,8 @@ function updateRowReviewBadges(id) {
   const rowEl = els.rows.querySelector(`.object-row[data-id="${escapeCss(id)}"]`);
   if (!rowEl) return;
 
+  rowEl.classList.toggle('review-marked', isRowReviewMarked(id));
+
   const chip = rowEl.querySelector('[data-review-chip]');
   if (chip) {
     chip.hidden = count === 0;
@@ -552,7 +558,7 @@ function renderRows() {
 
 function renderRow(row) {
   const article = document.createElement('article');
-  article.className = 'object-row';
+  article.className = isRowReviewMarked(row.id) ? 'object-row review-marked' : 'object-row';
   article.dataset.id = row.id;
 
   const symClass = row.symmetryType === 'none' ? 'none' : 'sym';
