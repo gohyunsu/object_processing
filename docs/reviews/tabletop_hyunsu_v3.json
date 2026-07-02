@@ -1,0 +1,195 @@
+{
+  "schema": "object-processing-tabletop-pose-review",
+  "schema_version": 1,
+  "data_version": "20260702-willi19-9aaa4ce-review-v8",
+  "version": "tabletop_hyunsu_v3",
+  "saved_at": "2026-07-02T13:27:01.403Z",
+  "source_url": "https://gohyunsu.github.io/object_processing/audit.html",
+  "objects": {
+    "blue_vase": {
+      "n_tabletop_poses": 5,
+      "bad_tabletop_pose_indices": [
+        2
+      ]
+    },
+    "baby_beaker": {
+      "n_tabletop_poses": 8,
+      "bad_tabletop_pose_indices": [
+        4
+      ],
+      "note": "seems physically unstable"
+    },
+    "black_holder_with_handle": {
+      "n_tabletop_poses": 3,
+      "bad_tabletop_pose_indices": [
+        2
+      ],
+      "note": "seems physically unstable"
+    },
+    "fruit_cutter_base": {
+      "n_tabletop_poses": 6,
+      "bad_tabletop_pose_indices": [
+        4
+      ],
+      "note": "seems unstable"
+    },
+    "fruit_cutter_green": {
+      "n_tabletop_poses": 4,
+      "bad_tabletop_pose_indices": [
+        1
+      ],
+      "note": "unstable pose + 오히려 반대쪽이 바닥과 맞닿은 pose가 누락됨 (아래 fruit cutter light green 참고)"
+    },
+    "green_cactus_vase": {
+      "n_tabletop_poses": 5,
+      "bad_tabletop_pose_indices": [
+        4
+      ]
+    },
+    "green_soap_dispenser": {
+      "n_tabletop_poses": 7,
+      "bad_tabletop_pose_indices": [
+        1,
+        4,
+        5,
+        6
+      ]
+    },
+    "large_peg": {
+      "n_tabletop_poses": 3,
+      "bad_tabletop_pose_indices": [
+        1
+      ]
+    },
+    "plant_mister": {
+      "n_tabletop_poses": 8,
+      "bad_tabletop_pose_indices": [
+        4,
+        5,
+        7
+      ]
+    },
+    "potato_mesher": {
+      "n_tabletop_poses": 3,
+      "bad_tabletop_pose_indices": [
+        0
+      ]
+    },
+    "white_wood_handle_watering_can": {
+      "n_tabletop_poses": 5,
+      "bad_tabletop_pose_indices": [
+        3
+      ]
+    },
+    "white_watering_can": {
+      "n_tabletop_poses": 4,
+      "bad_tabletop_pose_indices": [
+        3
+      ]
+    },
+    "white_table_lamp": {
+      "n_tabletop_poses": 3,
+      "bad_tabletop_pose_indices": [
+        2
+      ]
+    },
+    "white_plastic_box": {
+      "n_tabletop_poses": 4,
+      "bad_tabletop_pose_indices": [
+        3
+      ]
+    },
+    "wateringcan": {
+      "n_tabletop_poses": 6,
+      "bad_tabletop_pose_indices": [
+        4
+      ]
+    },
+    "washing_brush2": {
+      "n_tabletop_poses": 5,
+      "bad_tabletop_pose_indices": [
+        3
+      ],
+      "note": "duplicate"
+    },
+    "toothbrush_holder": {
+      "n_tabletop_poses": 10,
+      "bad_tabletop_pose_indices": [
+        0,
+        7
+      ]
+    },
+    "tea_case": {
+      "n_tabletop_poses": 2,
+      "bad_tabletop_pose_indices": [
+        0,
+        1
+      ],
+      "note": "그냥 이상함"
+    },
+    "spray_bottle": {
+      "n_tabletop_poses": 6,
+      "bad_tabletop_pose_indices": [
+        1,
+        4,
+        5
+      ]
+    },
+    "soap_dispenser": {
+      "n_tabletop_poses": 6,
+      "bad_tabletop_pose_indices": [
+        5
+      ]
+    },
+    "frog_bowl": {
+      "n_tabletop_poses": 4,
+      "bad_tabletop_pose_indices": [
+        3
+      ]
+    },
+    "frog_cup": {
+      "n_tabletop_poses": 8,
+      "bad_tabletop_pose_indices": [
+        1
+      ]
+    },
+    "standing_frame": {
+      "n_tabletop_poses": 3,
+      "bad_tabletop_pose_indices": [
+        1
+      ]
+    },
+    "brass_pot": {
+      "n_tabletop_poses": 3,
+      "note": "symmetry 축이 겹친 것으로 보임"
+    },
+    "redcar": {
+      "n_tabletop_poses": 6,
+      "note": "thumbnail"
+    },
+    "paper_bowl": {
+      "n_tabletop_poses": 2,
+      "note": "strange"
+    },
+    "paper_cup": {
+      "n_tabletop_poses": 3,
+      "note": "strange"
+    },
+    "pepper_tuna": {
+      "n_tabletop_poses": 2,
+      "note": "strange"
+    },
+    "tissue_box": {
+      "n_tabletop_poses": 2,
+      "note": "strangee"
+    },
+    "yellow_funnel": {
+      "n_tabletop_poses": 2,
+      "note": "axis"
+    },
+    "baseball": {
+      "n_tabletop_poses": 1,
+      "note": "too many axes?"
+    }
+  }
+}

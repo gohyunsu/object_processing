@@ -1,5 +1,5 @@
 const HF_BASE = 'https://huggingface.co/datasets/willi19/object_processing/resolve/main/';
-const DATA_VERSION = '20260702-willi19-9aaa4ce-review-v7';
+const DATA_VERSION = '20260702-willi19-9aaa4ce-review-v8';
 const REVIEW_DB_KEY = 'object_processing.audit.review_versions.v1';
 const REVIEW_DRAFT_KEY = 'object_processing.audit.review_draft.v1';
 const REVIEW_MANIFEST_PATH = 'reviews/manifest.json';
@@ -22,7 +22,7 @@ const state = {
   savedReviews: {},
   bundledReviews: {},
   defaultBundledReview: '',
-  currentReviewName: 'scratch',
+  currentReviewName: '',
   reviewDirty: false,
   auditMode: false,
 };
@@ -34,7 +34,6 @@ const els = {
   symmetryFilter: document.getElementById('symmetry-filter'),
   sort: document.getElementById('sort'),
   textureToggle: document.getElementById('texture-toggle'),
-  reviewVersion: document.getElementById('review-version'),
   reviewSelect: document.getElementById('review-select'),
   auditMode: document.getElementById('audit-mode'),
   saveReview: document.getElementById('save-review'),
@@ -97,9 +96,16 @@ function safeStorageSet(key, value) {
   }
 }
 
+function cleanReviewName(value) {
+  const name = String(value || '').trim();
+  return name && name !== 'scratch' ? name : '';
+}
+
 function reviewVersionName() {
-  const name = (els.reviewVersion.value || '').trim();
-  return name || 'scratch';
+  if (state.currentReviewName) return state.currentReviewName;
+  const opt = els.reviewSelect.selectedOptions[0];
+  if (opt && opt.dataset && opt.dataset.name) return opt.dataset.name;
+  return state.defaultBundledReview || 'review';
 }
 
 function flaggedSet(id, create = false) {
@@ -201,8 +207,9 @@ function loadReviewPayload(payload, { dirty = false } = {}) {
     if (note.trim()) state.objectNotes.set(id, note);
   });
 
-  state.currentReviewName = payload && payload.version ? String(payload.version) : 'scratch';
-  els.reviewVersion.value = state.currentReviewName;
+  state.currentReviewName = cleanReviewName(payload && payload.version)
+    || state.defaultBundledReview
+    || 'review';
   state.reviewDirty = dirty;
   persistDraft();
   refreshReviewState();
@@ -246,7 +253,7 @@ function renderReviewSelect() {
   }
   if (Object.keys(state.bundledReviews).length) {
     const group = document.createElement('optgroup');
-    group.label = 'Bundled';
+    group.label = 'Site versions';
     addReviewOptions(group, 'bundled', state.bundledReviews);
     els.reviewSelect.appendChild(group);
   }
@@ -428,8 +435,8 @@ async function init() {
 
   buildSymmetryFilter(rows);
   bindControls();
-  const draftName = draft && draft.version ? String(draft.version) : '';
-  if (state.defaultBundledReview && (!draft || !draftName || draftName === 'scratch')) {
+  const draftName = cleanReviewName(draft && draft.version);
+  if (state.defaultBundledReview && (!draft || !draftName)) {
     await loadBundledReview(state.defaultBundledReview, { dirty: false });
   } else if (draft) {
     loadReviewPayload(draft, { dirty: true });
@@ -489,12 +496,6 @@ function bindControls() {
   });
   els.auditMode.addEventListener('change', () => {
     state.auditMode = els.auditMode.checked;
-    refreshReviewState();
-  });
-  els.reviewVersion.addEventListener('input', () => {
-    state.currentReviewName = reviewVersionName();
-    state.reviewDirty = true;
-    persistDraft();
     refreshReviewState();
   });
   els.reviewSelect.addEventListener('change', async () => {
