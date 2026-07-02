@@ -1,7 +1,8 @@
 const HF_BASE = 'https://huggingface.co/datasets/willi19/object_processing/resolve/main/';
-const DATA_VERSION = '20260702-willi19-9aaa4ce-review-v2';
+const DATA_VERSION = '20260702-willi19-9aaa4ce-review-v3';
 const REVIEW_DB_KEY = 'object_processing.audit.review_versions.v1';
 const REVIEW_DRAFT_KEY = 'object_processing.audit.review_draft.v1';
+const REVIEW_MANIFEST_PATH = 'reviews/manifest.json';
 const AXIS_COLORS = [
   [1.0, 0.82, 0.10],
   [0.20, 0.85, 0.40],
@@ -18,6 +19,7 @@ const state = {
   flaggedPoses: new Map(),
   objectNotes: new Map(),
   savedReviews: {},
+  bundledReviews: {},
   currentReviewName: 'scratch',
   reviewDirty: false,
   auditMode: false,
@@ -128,8 +130,8 @@ function getObjectNote(id) {
 }
 
 function setObjectNote(id, note) {
-  const clean = String(note || '').trim();
-  if (clean) state.objectNotes.set(id, clean);
+  const raw = String(note || '');
+  if (raw.trim()) state.objectNotes.set(id, raw);
   else state.objectNotes.delete(id);
   state.currentReviewName = reviewVersionName();
   state.reviewDirty = true;
@@ -188,8 +190,8 @@ function loadReviewPayload(payload, { dirty = false } = {}) {
       .filter((value) => Number.isInteger(value) && value >= 0);
     if (clean.length) state.flaggedPoses.set(id, new Set(clean));
 
-    const note = entry && typeof entry.note === 'string' ? entry.note.trim() : '';
-    if (note) state.objectNotes.set(id, note);
+    const note = entry && typeof entry.note === 'string' ? entry.note : '';
+    if (note.trim()) state.objectNotes.set(id, note);
   });
 
   state.currentReviewName = payload && payload.version ? String(payload.version) : 'scratch';
@@ -212,16 +214,62 @@ function writeReviewDb(db) {
   safeStorageSet(REVIEW_DB_KEY, db);
 }
 
+function reviewOptionValue(source, name) {
+  return `${source}:${encodeURIComponent(name)}`;
+}
+
+function addReviewOptions(group, source, reviews) {
+  Object.keys(reviews).sort((a, b) => a.localeCompare(b)).forEach((name) => {
+    const opt = document.createElement('option');
+    opt.value = reviewOptionValue(source, name);
+    opt.dataset.source = source;
+    opt.dataset.name = name;
+    opt.textContent = reviews[name].label || name;
+    group.appendChild(opt);
+  });
+}
+
+function renderReviewSelect() {
+  els.reviewSelect.innerHTML = '<option value="">Saved versions</option>';
+  if (Object.keys(state.savedReviews).length) {
+    const group = document.createElement('optgroup');
+    group.label = 'Local';
+    addReviewOptions(group, 'local', state.savedReviews);
+    els.reviewSelect.appendChild(group);
+  }
+  if (Object.keys(state.bundledReviews).length) {
+    const group = document.createElement('optgroup');
+    group.label = 'Bundled';
+    addReviewOptions(group, 'bundled', state.bundledReviews);
+    els.reviewSelect.appendChild(group);
+  }
+}
+
 function loadSavedReviewList() {
   const db = readReviewDb();
   state.savedReviews = db.versions;
-  els.reviewSelect.innerHTML = '<option value="">Saved versions</option>';
-  Object.keys(state.savedReviews).sort((a, b) => a.localeCompare(b)).forEach((name) => {
-    const opt = document.createElement('option');
-    opt.value = name;
-    opt.textContent = name;
-    els.reviewSelect.appendChild(opt);
+  renderReviewSelect();
+}
+
+async function loadBundledReviewList() {
+  const manifest = await fetchJson(REVIEW_MANIFEST_PATH, { versions: [] });
+  state.bundledReviews = {};
+  const versions = Array.isArray(manifest && manifest.versions) ? manifest.versions : [];
+  versions.forEach((entry) => {
+    if (!entry || typeof entry !== 'object') return;
+    const name = String(entry.name || entry.version || '').trim();
+    const path = String(entry.path || '').trim();
+    if (!name || !path) return;
+    state.bundledReviews[name] = {
+      path,
+      label: entry.label || name,
+    };
   });
+  renderReviewSelect();
+}
+
+function selectReviewOption(source, name) {
+  els.reviewSelect.value = reviewOptionValue(source, name);
 }
 
 function persistDraft() {
@@ -235,7 +283,7 @@ function saveCurrentReview() {
   db.versions[name] = reviewPayload(name);
   writeReviewDb(db);
   loadSavedReviewList();
-  els.reviewSelect.value = name;
+  selectReviewOption('local', name);
   state.reviewDirty = false;
   persistDraft();
   refreshReviewState();
@@ -342,6 +390,7 @@ async function init() {
     return;
   }
 
+  await loadBundledReviewList();
   loadSavedReviewList();
   const draft = safeStorageGet(REVIEW_DRAFT_KEY, null);
 
@@ -423,10 +472,19 @@ function bindControls() {
     persistDraft();
     refreshReviewState();
   });
-  els.reviewSelect.addEventListener('change', () => {
-    const name = els.reviewSelect.value;
-    if (!name || !state.savedReviews[name]) return;
-    loadReviewPayload(state.savedReviews[name], { dirty: false });
+  els.reviewSelect.addEventListener('change', async () => {
+    const opt = els.reviewSelect.selectedOptions[0];
+    if (!opt || !opt.dataset.source || !opt.dataset.name) return;
+    const { source, name } = opt.dataset;
+    if (source === 'local' && state.savedReviews[name]) {
+      loadReviewPayload(state.savedReviews[name], { dirty: false });
+      return;
+    }
+    if (source === 'bundled' && state.bundledReviews[name]) {
+      const payload = await fetchJson(state.bundledReviews[name].path, null);
+      if (payload) loadReviewPayload(payload, { dirty: false });
+      else els.reviewStatus.textContent = `Could not load bundled review: ${name}`;
+    }
   });
   els.saveReview.addEventListener('click', saveCurrentReview);
   els.exportReview.addEventListener('click', exportCurrentReview);
