@@ -1,0 +1,142 @@
+{
+  "objects": {
+    "paper_cup": {
+      "source_bounds_mm": [
+        [
+          324.62524,
+          -57.469193,
+          -75.104706
+        ],
+        [
+          408.82654,
+          62.469734,
+          58.9246
+        ]
+      ],
+      "source_extents_mm": [
+        84.2013,
+        119.938927,
+        134.029306
+      ],
+      "transform": "bbox_centered_mm_to_m",
+      "mesh": "texture_overrides/paper_cup/mesh.glb",
+      "source": "Object_3DScan_1/PaperCup/PaperCup.obj",
+      "size_bytes": 13204468
+    },
+    "tennis_ball": {
+      "source_bounds_mm": [
+        [
+          -27.625263,
+          -22.802364,
+          -41.747284
+        ],
+        [
+          36.710777,
+          40.90089,
+          22.644821
+        ]
+      ],
+      "source_extents_mm": [
+        64.33604,
+        63.703254,
+        64.392105
+      ],
+      "transform": "bbox_centered_mm_to_m",
+      "mesh": "texture_overrides/tennis_ball/mesh.glb",
+      "source": "Object_3DScan_1/Tennis_Ball/Tennis_Ball.obj",
+      "size_bytes": 5214568
+    },
+    "tissue_box": {
+      "source_bounds_mm": [
+        [
+          -73.781204,
+          -95.18018,
+          -90.099434
+        ],
+        [
+          70.37018,
+          89.01294,
+          93.341484
+        ]
+      ],
+      "source_extents_mm": [
+        144.151384,
+        184.19312,
+        183.440918
+      ],
+      "transform": "bbox_centered_mm_to_m",
+      "mesh": "texture_overrides/tissue_box/mesh.glb",
+      "source": "Object_3DScan_1/Tissue/Tissue.obj",
+      "size_bytes": 5735884
+    },
+    "pepper_tuna": {
+      "source_bounds_mm": [
+        [
+          -39.041077,
+          -41.634354,
+          -58.665047
+        ],
+        [
+          62.656,
+          62.181858,
+          39.015633
+        ]
+      ],
+      "source_extents_mm": [
+        101.69707700000001,
+        103.81621200000001,
+        97.68068
+      ],
+      "transform": "bbox_centered_mm_to_m",
+      "mesh": "texture_overrides/pepper_tuna/mesh.glb",
+      "source": "Object_3DScan_1/Tuna_Can/Tuna_Can.obj",
+      "size_bytes": 11920728
+    },
+    "paper_bowl": {
+      "source_bounds_mm": [
+        [
+          -65.24521,
+          -46.546764,
+          -66.63421
+        ],
+        [
+          57.856873,
+          76.5944,
+          56.04211
+        ]
+      ],
+      "source_extents_mm": [
+        123.102083,
+        123.141164,
+        122.67632
+      ],
+      "transform": "bbox_centered_mm_to_m",
+      "mesh": "texture_overrides/paper_bowl/mesh.glb",
+      "source": "Object_3DScan_1/Paper_Soup_Bowl/Paper_Soup_Bowl.obj",
+      "size_bytes": 7773980
+    },
+    "tea_case": {
+      "source_bounds_mm": [
+        [
+          -41.580433,
+          -68.728294,
+          -68.1371
+        ],
+        [
+          44.894,
+          68.18828,
+          76.19473
+        ]
+      ],
+      "source_extents_mm": [
+        86.474433,
+        136.91657400000003,
+        144.33183000000002
+      ],
+      "transform": "bbox_centered_mm_to_m",
+      "mesh": "texture_overrides/tea_case/mesh.glb",
+      "source": "Object_3DScan_1/Osulloc/Osulloc.obj",
+      "size_bytes": 6837164
+    }
+  }
+}

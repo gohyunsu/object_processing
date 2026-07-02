@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Object Processing Audit</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #f6f7f9;
+    --panel: #ffffff;
+    --panel-soft: #f0f3f6;
+    --line: #dbe1e8;
+    --ink: #17202a;
+    --ink-soft: #667381;
+    --accent: #2563eb;
+    --accent-soft: #dbeafe;
+    --ok: #15803d;
+    --warn: #b45309;
+    --bad: #b91c1c;
+  }
+
+  body {
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  a { color: inherit; }
+  .wrap { max-width: 1680px; margin: 0 auto; padding: 0 24px; }
+
+  nav.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: rgba(246, 247, 249, 0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+
+  nav.topbar .wrap {
+    height: 58px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 15px;
+  }
+
+  .logo .dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #2563eb, #0f766e);
+  }
+
+  .nav-links {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .nav-links a {
+    text-decoration: none;
+    color: var(--ink-soft);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 7px 11px;
+    border-radius: 6px;
+  }
+
+  .nav-links a:hover,
+  .nav-links a.active {
+    background: var(--panel-soft);
+    color: var(--ink);
+  }
+
+  header.audit-head {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) auto;
+    gap: 16px;
+    align-items: end;
+    padding: 24px 0 18px;
+  }
+
+  h1 {
+    font-size: 24px;
+    line-height: 1.15;
+    letter-spacing: 0;
+  }
+
+  .head-sub {
+    margin-top: 7px;
+    color: var(--ink-soft);
+    font-size: 14px;
+  }
+
+  .stats {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    min-width: 108px;
+    padding: 10px 12px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+
+  .stat b {
+    display: block;
+    font-size: 20px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stat span {
+    display: block;
+    margin-top: 2px;
+    color: var(--ink-soft);
+    font-size: 12px;
+  }
+
+  .toolbar {
+    position: sticky;
+    top: 58px;
+    z-index: 25;
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) repeat(3, auto);
+    gap: 10px;
+    align-items: center;
+    padding: 12px 0;
+    background: rgba(246, 247, 249, 0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+
+  input[type="search"],
+  select {
+    height: 38px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+    color: var(--ink);
+    font: inherit;
+    font-size: 14px;
+    outline: none;
+  }
+
+  input[type="search"] {
+    width: 100%;
+    padding: 0 13px;
+  }
+
+  select {
+    padding: 0 34px 0 12px;
+    cursor: pointer;
+  }
+
+  input[type="search"]:focus,
+  select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+
+  .check {
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 11px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--ink-soft);
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .check input { accent-color: var(--accent); }
+
+  .rows {
+    display: grid;
+    gap: 14px;
+    padding: 16px 0 56px;
+  }
+
+  .object-row {
+    display: grid;
+    grid-template-columns: minmax(190px, 240px) minmax(320px, 1fr) minmax(320px, 1fr);
+    gap: 12px;
+    min-height: 330px;
+    padding: 12px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+
+  .object-meta {
+    display: grid;
+    grid-template-rows: auto auto 1fr auto;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .thumb {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: contain;
+    background: #eef1f4;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+  }
+
+  .obj-title {
+    min-width: 0;
+  }
+
+  .obj-title h2 {
+    font-size: 16px;
+    line-height: 1.25;
+    letter-spacing: 0;
+    word-break: break-word;
+  }
+
+  .obj-title code {
+    display: block;
+    margin-top: 3px;
+    color: var(--ink-soft);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    word-break: break-all;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-content: start;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 23px;
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: var(--panel-soft);
+    color: var(--ink-soft);
+    border: 1px solid transparent;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .chip.sym { color: #1d4ed8; background: #dbeafe; }
+  .chip.none { color: #64748b; background: #e2e8f0; }
+  .chip.pose { color: #0f766e; background: #ccfbf1; }
+  .chip.texture { color: #b45309; background: #fef3c7; }
+  .chip.issue { color: var(--bad); background: #fee2e2; }
+
+  .meta-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .meta-links a {
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .meta-links a:hover { text-decoration: underline; }
+
+  .viewer-cell {
+    min-width: 0;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #0e141b;
+  }
+
+  .viewer-title {
+    height: 36px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 10px;
+    color: #dce7f3;
+    background: #121a24;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0;
+  }
+
+  .viewer-title span {
+    margin-left: auto;
+    color: #91a1b4;
+    font-weight: 600;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .canvas-wrap {
+    position: relative;
+    min-height: 280px;
+  }
+
+  canvas.audit-canvas {
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    display: block;
+    outline: none;
+    touch-action: none;
+  }
+
+  .scene-state {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    text-align: center;
+    color: #aab7c6;
+    background: linear-gradient(180deg, rgba(14,20,27,0.92), rgba(14,20,27,0.78));
+    font-size: 13px;
+    line-height: 1.45;
+    pointer-events: none;
+  }
+
+  .scene-state.error { color: #fecaca; }
+
+  .empty {
+    display: none;
+    margin: 30px 0 60px;
+    padding: 24px;
+    color: var(--ink-soft);
+    text-align: center;
+    border: 1px dashed var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+  }
+
+  @media (max-width: 1120px) {
+    .object-row {
+      grid-template-columns: minmax(180px, 220px) minmax(320px, 1fr);
+    }
+    .viewer-cell.tabletop {
+      grid-column: 2;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .wrap { padding: 0 14px; }
+    nav.topbar .wrap { gap: 8px; }
+    .logo { font-size: 14px; }
+    .nav-links a:not(.active) { display: none; }
+    .nav-links a { padding: 6px 8px; font-size: 12px; }
+    header.audit-head { grid-template-columns: 1fr; }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      justify-content: stretch;
+    }
+    .stat { min-width: 0; padding: 9px 10px; }
+    .stat b { font-size: 18px; }
+    .stat span { font-size: 11px; }
+    .toolbar { grid-template-columns: 1fr; top: 58px; }
+    .toolbar input[type="search"] { grid-column: 1 / -1; }
+    .check { justify-content: flex-start; }
+    .object-row { grid-template-columns: 1fr; }
+    .viewer-cell.tabletop { grid-column: auto; }
+    .object-meta { grid-template-columns: 96px minmax(0, 1fr); grid-template-rows: auto auto auto; }
+    .thumb { grid-row: 1 / span 3; }
+    .meta-links { align-self: end; }
+  }
+</style>
+</head>
+<body>
+  <nav class="topbar">
+    <div class="wrap">
+      <a class="logo" href="index.html"><span class="dot"></span>Object Processing</a>
+      <div class="nav-links">
+        <a href="index.html">Overview</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="audit.html" class="active">Audit</a>
+        <a href="https://github.com/willi19/object_processing" target="_blank" rel="noopener">Code</a>
+        <a href="https://huggingface.co/datasets/willi19/object_processing" target="_blank" rel="noopener">Hugging Face</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <header class="audit-head">
+      <div>
+        <h1>Tabletop / Symmetry Audit</h1>
+        <p class="head-sub">Lazy 3D audit for symmetry and tabletop poses.</p>
+      </div>
+      <div class="stats" aria-live="polite">
+        <div class="stat"><b id="stat-visible">0</b><span>visible</span></div>
+        <div class="stat"><b id="stat-objects">0</b><span>objects</span></div>
+        <div class="stat"><b id="stat-textures">0</b><span>textures</span></div>
+      </div>
+    </header>
+
+    <section class="toolbar" aria-label="Audit controls">
+      <input id="search" type="search" placeholder="Search by object name, id, or symmetry type" autocomplete="off">
+      <select id="symmetry-filter" aria-label="Symmetry filter">
+        <option value="">All symmetry</option>
+      </select>
+      <select id="sort" aria-label="Sort objects">
+        <option value="az">Name A-Z</option>
+        <option value="poses-desc">Most tabletop poses</option>
+        <option value="poses-asc">Fewest tabletop poses</option>
+        <option value="symmetry">Symmetry type</option>
+      </select>
+      <label class="check"><input id="texture-toggle" type="checkbox" checked> Use texture fixes</label>
+    </section>
+
+    <section id="rows" class="rows"></section>
+    <div id="empty" class="empty">No objects match the current filters.</div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/babylonjs@7.34.3/babylon.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/babylonjs-loaders@7.34.3/babylonjs.loaders.min.js"></script>
+  <script src="js/audit.js"></script>
+</body>
+</html>
