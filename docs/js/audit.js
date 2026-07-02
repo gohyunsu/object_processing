@@ -1,4 +1,5 @@
 const HF_BASE = 'https://huggingface.co/datasets/willi19/object_processing/resolve/main/';
+const DATA_VERSION = '20260702-willi19-9aaa4ce';
 const AXIS_COLORS = [
   [1.0, 0.82, 0.10],
   [0.20, 0.85, 0.40],
@@ -33,13 +34,21 @@ function escapeHtml(value) {
 
 async function fetchJson(path, fallback = null) {
   try {
-    const res = await fetch(path);
+    const res = await fetch(versionedDataUrl(path), { cache: 'reload' });
     if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
     return await res.json();
   } catch (err) {
     console.warn(`Could not load ${path}`, err);
     return fallback;
   }
+}
+
+function versionedDataUrl(path) {
+  const url = new URL(path, window.location.href);
+  if (url.origin === window.location.origin && !url.searchParams.has('v')) {
+    url.searchParams.set('v', DATA_VERSION);
+  }
+  return url.toString();
 }
 
 async function init() {
