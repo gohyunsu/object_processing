@@ -21,6 +21,13 @@ from scipy.spatial.transform import Rotation as Rot
 
 from object_processing.utils.rotation import batched_quat_delta
 
+# A high-order rotational symmetry means the cross-section is effectively round:
+# a simplified mesh of a body of revolution is a faceted prism, so its true Cinf
+# is detected as a large finite Cn (e.g. C12). For tabletop de-duplication we
+# treat any fold at/above this as continuous, so the "rolling on the round side"
+# family of poses collapses to one instead of one-per-facet.
+_CONTINUOUS_FOLD_MIN = 6
+
 
 def _resting_up(qpos):
     """World-up direction expressed in the object frame.
@@ -36,8 +43,9 @@ def _resting_up(qpos):
 def _symmetry_ops(symmetry):
     """From a detected-symmetry dict, derive ``(continuous_axes, discrete_rots,
     spherical)``: object-frame revolute axes, n-fold rotation matrices, and a
-    flag for full spherical symmetry (>= 2 independent revolute axes)."""
+    flag for full spherical symmetry (>= 2 independent *true* revolute axes)."""
     cont_axes, discrete_rots = [], []
+    n_true_revolute = 0  # only genuine inf-fold axes imply a sphere
     for a in (symmetry or {}).get("axes", []):
         axis = np.asarray(a["axis"], float)
         norm = np.linalg.norm(axis)
@@ -47,15 +55,22 @@ def _symmetry_ops(symmetry):
         fold = a["fold"]
         if fold == "inf":
             cont_axes.append(axis)
+            n_true_revolute += 1
+        elif int(fold) >= _CONTINUOUS_FOLD_MIN:
+            # A faceted body of revolution reads as a high finite Cn; treat it as
+            # a revolute axis for cone de-duplication, but it is NOT evidence of a
+            # sphere (else a round object with any secondary high fold would
+            # wrongly collapse to a single pose).
+            cont_axes.append(axis)
         else:
             for k in range(1, int(fold)):
                 discrete_rots.append(
                     Rot.from_rotvec(axis * (2 * np.pi * k / int(fold))).as_matrix())
-    spherical = len(cont_axes) >= 2  # only a sphere has two+ revolute axes
+    spherical = n_true_revolute >= 2  # only a sphere has two+ revolute axes
     return cont_axes, discrete_rots, spherical
 
 
-def _is_duplicated_pose(qpos, accepted, sym_ops, angle_thresh_deg=5.0, axis_tol=0.02):
+def _is_duplicated_pose(qpos, accepted, sym_ops, angle_thresh_deg=12.0, axis_tol=0.05):
     """True if this resting pose matches an accepted one, up to **yaw** and the
     object's **rotational symmetry**:
 
@@ -135,6 +150,7 @@ def generate_tabletop_poses(
     remove_duplicated=True,
     symmetry=None,
     debug_vis_path=None,
+    seed=0,
 ):
     """Generate stable resting poses for the object described by ``mjcf_path``.
 
@@ -145,6 +161,7 @@ def generate_tabletop_poses(
     ``debug_vis_path`` are cleared first.
     """
     sym_ops = _symmetry_ops(symmetry)
+    rng = np.random.default_rng(seed)  # deterministic surface sampling + in-plane spin
     shutil.rmtree(output_dir, ignore_errors=True)
     if debug_vis_path is not None:
         shutil.rmtree(debug_vis_path, ignore_errors=True)
@@ -165,7 +182,8 @@ def generate_tabletop_poses(
 
     # Candidate orientations: sample surface points, align each face normal to -Z
     # plus a random in-plane spin, then rest the lowest vertex just above z=0.
-    points, face_indices = trimesh.sample.sample_surface_even(combined, count=max_try_num)
+    points, face_indices = trimesh.sample.sample_surface_even(
+        combined, count=max_try_num, seed=int(rng.integers(1 << 31)))
 
     trans_list, quat_list, face_info_list = [], [], []
     for p, face_idx in zip(points, face_indices):
@@ -177,7 +195,7 @@ def generate_tabletop_poses(
             continue
 
         rotation, _ = Rot.align_vectors([[0, 0, -1]], [face_normal])
-        z_spin = Rot.from_rotvec([0, 0, np.random.uniform(0, 2 * np.pi)])
+        z_spin = Rot.from_rotvec([0, 0, rng.uniform(0, 2 * np.pi)])
         final_rotation = z_spin * rotation
 
         quat = final_rotation.as_quat()  # [x, y, z, w]

@@ -23,58 +23,61 @@ import numpy as np
 
 # Per-object pose override: use this specific tabletop pose (.npy stem in
 # processed_data/info/tabletop/) instead of the auto-selected tallest pose.
+#
+# NOTE: these stems were remapped after the symmetry / tabletop-dedup fix
+# regenerated every pose file with new indices. Each was rematched to its
+# original curated resting face by yaw-invariant up-vector (near-exact matches).
+# pepper_tuna, pepper_tuna_light, soaptray and yellow_funnel lost their curated
+# resting face during regeneration and now fall back to the auto-selected
+# tallest pose — re-curate if their hero shot looks wrong.
 POSE_OVERRIDE = {
-    "blue_alarm": "000",   # stands the clock up on its legs (vs 011 lying flat)
+    "blue_alarm": "003",   # stands the clock up on its legs (vs lying flat)
     "apple": "004",
-    "baby_beaker": "033",
-    "beige_brush": "000",
-    "colander_green": "000",
-    "blue_vase": "003",
-    "box_pink": "002",
-    "brass_pot": "017",
-    "brown_ramen": "003",
-    "container_pink": "005",
-    "french_mustard": "002",   # 025 was an impossible resting pose
-    "frog_bowl": "000",
-    "frog_cup": "002",         # 019 was an impossible resting pose
-    "fruit_cutter_base": "004",
-    "fruit_cutter_green": "001",   # 009/010/019 were impossible poses
-    "fruit_cutter_light_green": "000",   # 010/028/001 were impossible poses
-    "green_attached_container": "008",
-    "green_lamp": "001",
-    "green_soap_dispenser": "002",
-    "icecream_scoop": "000",   # 002 was a duplicate pose
-    "large_peg": "002",        # 017 was an impossible pose
-    "lemon_squeezer": "003",
-    "light_green_basket": "001",
-    "open_box": "002",
+    "baby_beaker": "021",
+    "beige_brush": "005",
+    "colander_green": "001",
+    "blue_vase": "007",
+    "box_pink": "003",
+    "brass_pot": "002",
+    "brown_ramen": "001",
+    "container_pink": "001",
+    "french_mustard": "000",
+    "frog_bowl": "002",
+    "frog_cup": "002",
+    "fruit_cutter_base": "001",
+    "fruit_cutter_green": "000",
+    "fruit_cutter_light_green": "000",
+    "green_attached_container": "000",
+    "green_lamp": "011",
+    "green_soap_dispenser": "015",
+    "icecream_scoop": "000",
+    "large_peg": "006",
+    "lemon_squeezer": "000",
+    "light_green_basket": "004",
+    "open_box": "000",
     "organizer_beige": "001",
-    "pastel_blue_cup": "000",
-    "mug_holder": "009",
-    "jja_ramen": "000",
-    "pink_clock": "012",
+    "pastel_blue_cup": "007",
+    "mug_holder": "005",
+    "jja_ramen": "001",
+    "pink_clock": "003",
     "paper_bowl": "001",
-    "paper_cup": "025",
-    "pepper_tuna": "019",
-    "pepper_tuna_light": "010",
-    "yellow_plastic_cup": "001",
-    "wood_tray_big": "001",
-    "wood_tray_small": "002",
-    "soaptray": "001",
-    "standing_frame": "030",   # 034/017 were impossible resting poses
-    "yellow_funnel": "001",
-    "plant_pot": "001",
-    "toothbrush_holder": "024",   # 001 was an impossible resting pose
-    "white_plastic_box": "001",
-    "white_soap_dish": "002",
-    "white_table_lamp": "012",    # 035 was an impossible resting pose
-    "white_watering_can": "000",  # 004 was impossible; no truly upright pose exists, 000 is the best of {000,009,018}
-    "magazine_file": "007",
-    "shoe_organizer": "006",
-    "smallbowl": "000",
-    "spam_can": "006",
-    "wateringcan": "003",
-    "white_pen_cup": "005",
+    "paper_cup": "006",
+    "yellow_plastic_cup": "017",
+    "wood_tray_big": "002",
+    "wood_tray_small": "000",
+    "standing_frame": "035",
+    "plant_pot": "013",
+    "toothbrush_holder": "000",
+    "white_plastic_box": "002",
+    "white_soap_dish": "001",
+    "white_table_lamp": "011",
+    "white_watering_can": "003",
+    "magazine_file": "006",
+    "shoe_organizer": "000",
+    "smallbowl": "001",
+    "spam_can": "002",
+    "wateringcan": "001",
+    "white_pen_cup": "006",
 }
 
 

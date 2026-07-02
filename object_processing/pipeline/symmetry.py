@@ -74,6 +74,12 @@ def _fold_about_axis(mesh, prox, pts, com, axis, scale, rel_tol, max_fold):
     residual is the worst normalized distance among the accepted generators.
     """
     tol = rel_tol * scale
+    # Discrete folds must clear a stricter margin than the continuous test. A
+    # marginal high-fold match near ``tol`` is almost always an accidental
+    # near-alignment on a roughly-round-but-not-symmetric object (e.g. a brush
+    # handle scraping C12 at res ~= tol), and a false Cn wrongly collapses real
+    # tabletop poses. Genuine faceted revolutions clear this comfortably.
+    disc_tol = 0.8 * tol
 
     # Continuous test first: if every incommensurate probe angle is invariant,
     # the axis is a body-of-revolution axis.
@@ -86,7 +92,7 @@ def _fold_about_axis(mesh, prox, pts, com, axis, scale, rel_tol, max_fold):
         if n > max_fold:
             break
         res = _residual(mesh, prox, pts, com, axis, 2 * np.pi / n)
-        if res < tol and n > best_n:
+        if res < disc_tol and n > best_n:
             best_n, best_res = n, res
     return best_n, best_res / scale
 
@@ -123,14 +129,22 @@ def detect_symmetry(
     if scale <= 0:
         raise ValueError("symmetry: degenerate mesh (zero scale)")
 
-    # Principal axes of inertia (about COM) are the only candidate axes.
+    # Principal axes of inertia (about COM) are the exact candidate axes when the
+    # inertia ellipsoid is non-degenerate.
     eigvals, eigvecs = np.linalg.eigh(mesh.moment_inertia)
     candidate_axes = [eigvecs[:, i] for i in range(3)]
 
-    # If the inertia ellipsoid is a sphere (cube/octa/tetra/sphere), the
-    # principal axes are arbitrary; also probe the body diagonals so cubic
-    # symmetry is not missed.
-    if np.ptp(eigvals) < 1e-6 * max(eigvals.max(), 1e-12):
+    # When the inertia ellipsoid is (near-)isotropic, the principal axes returned
+    # by eigh are numerically arbitrary and can miss a real symmetry axis — this
+    # is exactly the tall-as-wide body-of-revolution case (e.g. a cup whose
+    # height ~= diameter makes the axial and transverse moments coincide). A
+    # *relative* spread test catches it (the old absolute 1e-6 test never fired
+    # for physical meshes). In that case also probe the object's coordinate axes
+    # and body diagonals, since the true symmetry axis is no longer distinguished
+    # as a principal axis.
+    if np.ptp(eigvals) < 0.05 * max(eigvals.max(), 1e-12):
+        for e in np.eye(3):
+            candidate_axes.append(e)
         for s in ((1, 1, 1), (1, 1, -1), (1, -1, 1), (-1, 1, 1)):
             candidate_axes.append(np.array(s, float) / np.sqrt(3.0))
 
