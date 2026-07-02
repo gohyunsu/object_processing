@@ -1,5 +1,12 @@
 {
   "schema": "object-processing-tabletop-pose-review-manifest",
   "schema_version": 1,
-  "versions": []
+  "default_version": "tabletop_hyunsu_v2",
+  "versions": [
+    {
+      "name": "tabletop_hyunsu_v2",
+      "label": "tabletop_hyunsu_v2",
+      "path": "reviews/tabletop_hyunsu_v2.json"
+    }
+  ]
 }

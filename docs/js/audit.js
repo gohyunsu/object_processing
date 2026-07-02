@@ -1,5 +1,5 @@
 const HF_BASE = 'https://huggingface.co/datasets/willi19/object_processing/resolve/main/';
-const DATA_VERSION = '20260702-willi19-9aaa4ce-review-v6';
+const DATA_VERSION = '20260702-willi19-9aaa4ce-review-v7';
 const REVIEW_DB_KEY = 'object_processing.audit.review_versions.v1';
 const REVIEW_DRAFT_KEY = 'object_processing.audit.review_draft.v1';
 const REVIEW_MANIFEST_PATH = 'reviews/manifest.json';
@@ -12,6 +12,7 @@ const REVIEW_COLOR = [1.0, 0.15, 0.12];
 
 const state = {
   rows: [],
+  rowIds: new Set(),
   textureOverrides: {},
   useTextureOverrides: true,
   active: new Map(),
@@ -20,6 +21,7 @@ const state = {
   objectNotes: new Map(),
   savedReviews: {},
   bundledReviews: {},
+  defaultBundledReview: '',
   currentReviewName: 'scratch',
   reviewDirty: false,
   auditMode: false,
@@ -184,6 +186,7 @@ function loadReviewPayload(payload, { dirty = false } = {}) {
     : {};
 
   Object.entries(objects).forEach(([id, entry]) => {
+    if (state.rowIds.size && !state.rowIds.has(id)) return;
     const indices = Array.isArray(entry)
       ? entry
       : entry && Array.isArray(entry.bad_tabletop_pose_indices)
@@ -258,6 +261,7 @@ function loadSavedReviewList() {
 async function loadBundledReviewList() {
   const manifest = await fetchJson(REVIEW_MANIFEST_PATH, { versions: [] });
   state.bundledReviews = {};
+  state.defaultBundledReview = String(manifest && manifest.default_version ? manifest.default_version : '').trim();
   const versions = Array.isArray(manifest && manifest.versions) ? manifest.versions : [];
   versions.forEach((entry) => {
     if (!entry || typeof entry !== 'object') return;
@@ -270,6 +274,15 @@ async function loadBundledReviewList() {
     };
   });
   renderReviewSelect();
+}
+
+async function loadBundledReview(name, { dirty = false } = {}) {
+  if (!name || !state.bundledReviews[name]) return false;
+  const payload = await fetchJson(state.bundledReviews[name].path, null);
+  if (!payload) return false;
+  loadReviewPayload(payload, { dirty });
+  selectReviewOption('bundled', name);
+  return true;
 }
 
 function selectReviewOption(source, name) {
@@ -411,10 +424,16 @@ async function init() {
     return enrichRow(obj, info);
   }));
   state.rows = rows;
+  state.rowIds = new Set(rows.map((row) => row.id));
 
   buildSymmetryFilter(rows);
   bindControls();
-  if (draft) loadReviewPayload(draft, { dirty: true });
+  const draftName = draft && draft.version ? String(draft.version) : '';
+  if (state.defaultBundledReview && (!draft || !draftName || draftName === 'scratch')) {
+    await loadBundledReview(state.defaultBundledReview, { dirty: false });
+  } else if (draft) {
+    loadReviewPayload(draft, { dirty: true });
+  }
   applyInitialParams();
   renderRows();
   refreshReviewState();
@@ -487,9 +506,8 @@ function bindControls() {
       return;
     }
     if (source === 'bundled' && state.bundledReviews[name]) {
-      const payload = await fetchJson(state.bundledReviews[name].path, null);
-      if (payload) loadReviewPayload(payload, { dirty: false });
-      else els.reviewStatus.textContent = `Could not load bundled review: ${name}`;
+      const loaded = await loadBundledReview(name, { dirty: false });
+      if (!loaded) els.reviewStatus.textContent = `Could not load bundled review: ${name}`;
     }
   });
   els.saveReview.addEventListener('click', saveCurrentReview);

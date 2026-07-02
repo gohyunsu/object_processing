@@ -533,13 +533,6 @@
       "thumb": "objects/spicemill/thumb.png"
     },
     {
-      "id": "sponge_simple_hyunsu",
-      "label": "Sponge Simple Hyunsu",
-      "category": "",
-      "url": "objects/sponge_simple_hyunsu/mesh.glb",
-      "thumb": "objects/sponge_simple_hyunsu/thumb.png"
-    },
-    {
       "id": "spray_bottle",
       "label": "Spray Bottle",
       "category": "",
