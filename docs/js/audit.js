@@ -1,5 +1,5 @@
 const HF_BASE = 'https://huggingface.co/datasets/willi19/object_processing/resolve/main/';
-const DATA_VERSION = '20260702-willi19-9aaa4ce-review-v1';
+const DATA_VERSION = '20260702-willi19-9aaa4ce-review-v2';
 const REVIEW_DB_KEY = 'object_processing.audit.review_versions.v1';
 const REVIEW_DRAFT_KEY = 'object_processing.audit.review_draft.v1';
 const AXIS_COLORS = [
@@ -16,9 +16,11 @@ const state = {
   active: new Map(),
   observer: null,
   flaggedPoses: new Map(),
+  objectNotes: new Map(),
   savedReviews: {},
   currentReviewName: 'scratch',
   reviewDirty: false,
+  auditMode: false,
 };
 
 const els = {
@@ -30,6 +32,7 @@ const els = {
   textureToggle: document.getElementById('texture-toggle'),
   reviewVersion: document.getElementById('review-version'),
   reviewSelect: document.getElementById('review-select'),
+  auditMode: document.getElementById('audit-mode'),
   saveReview: document.getElementById('save-review'),
   exportReview: document.getElementById('export-review'),
   importReview: document.getElementById('import-review'),
@@ -120,16 +123,40 @@ function totalFlaggedPoses() {
   return total;
 }
 
+function getObjectNote(id) {
+  return state.objectNotes.get(id) || '';
+}
+
+function setObjectNote(id, note) {
+  const clean = String(note || '').trim();
+  if (clean) state.objectNotes.set(id, clean);
+  else state.objectNotes.delete(id);
+  state.currentReviewName = reviewVersionName();
+  state.reviewDirty = true;
+  persistDraft();
+  refreshReviewState(id);
+}
+
+function totalObjectNotes() {
+  return state.objectNotes.size;
+}
+
 function reviewPayload(name = reviewVersionName()) {
   const objects = {};
-  state.flaggedPoses.forEach((set, id) => {
-    const indices = [...set].filter(Number.isInteger).sort((a, b) => a - b);
-    if (!indices.length) return;
+  const ids = new Set([...state.flaggedPoses.keys(), ...state.objectNotes.keys()]);
+
+  ids.forEach((id) => {
+    const set = flaggedSet(id);
+    const indices = set ? [...set].filter(Number.isInteger).sort((a, b) => a - b) : [];
+    const note = getObjectNote(id);
+    if (!indices.length && !note) return;
     const row = state.rows.find((r) => r.id === id);
-    objects[id] = {
-      bad_tabletop_pose_indices: indices,
+    const entry = {
       n_tabletop_poses: row ? row.poseCount : undefined,
     };
+    if (indices.length) entry.bad_tabletop_pose_indices = indices;
+    if (note) entry.note = note;
+    objects[id] = entry;
   });
 
   return {
@@ -145,6 +172,7 @@ function reviewPayload(name = reviewVersionName()) {
 
 function loadReviewPayload(payload, { dirty = false } = {}) {
   state.flaggedPoses.clear();
+  state.objectNotes.clear();
   const objects = payload && payload.objects && typeof payload.objects === 'object'
     ? payload.objects
     : {};
@@ -159,6 +187,9 @@ function loadReviewPayload(payload, { dirty = false } = {}) {
       .map((value) => Number(value))
       .filter((value) => Number.isInteger(value) && value >= 0);
     if (clean.length) state.flaggedPoses.set(id, new Set(clean));
+
+    const note = entry && typeof entry.note === 'string' ? entry.note.trim() : '';
+    if (note) state.objectNotes.set(id, note);
   });
 
   state.currentReviewName = payload && payload.version ? String(payload.version) : 'scratch';
@@ -212,6 +243,7 @@ function saveCurrentReview() {
 
 function clearCurrentReview() {
   state.flaggedPoses.clear();
+  state.objectNotes.clear();
   state.currentReviewName = reviewVersionName();
   state.reviewDirty = true;
   persistDraft();
@@ -248,6 +280,7 @@ async function importReviewFile(file) {
 }
 
 function togglePoseFlag(row, poseIndex) {
+  if (!state.auditMode) return;
   const set = flaggedSet(row.id, true);
   if (set.has(poseIndex)) set.delete(poseIndex);
   else set.add(poseIndex);
@@ -265,6 +298,7 @@ function tabletopSummary(row) {
 
 function updateRowReviewBadges(id) {
   const count = flaggedPoseCount(id);
+  const note = getObjectNote(id);
   const rowEl = els.rows.querySelector(`.object-row[data-id="${escapeCss(id)}"]`);
   if (!rowEl) return;
 
@@ -274,6 +308,14 @@ function updateRowReviewBadges(id) {
     chip.textContent = `${count} flagged`;
   }
 
+  const noteChip = rowEl.querySelector('[data-note-chip]');
+  if (noteChip) {
+    noteChip.hidden = !note;
+  }
+
+  const noteInput = rowEl.querySelector('[data-object-note]');
+  if (noteInput && noteInput.value !== note) noteInput.value = note;
+
   const row = state.rows.find((r) => r.id === id);
   const summary = rowEl.querySelector('[data-tabletop-summary]');
   if (summary && row) summary.textContent = tabletopSummary(row);
@@ -282,7 +324,8 @@ function updateRowReviewBadges(id) {
 function refreshReviewState(changedId = null) {
   els.statFlagged.textContent = String(totalFlaggedPoses());
   const dirtyLabel = state.reviewDirty ? 'Unsaved changes' : 'Saved';
-  els.reviewStatus.textContent = `${dirtyLabel}: ${reviewVersionName()} · ${totalFlaggedPoses()} flagged poses`;
+  const modeLabel = state.auditMode ? 'Audit mode on' : 'View mode';
+  els.reviewStatus.textContent = `${modeLabel} · ${dirtyLabel}: ${reviewVersionName()} · ${totalFlaggedPoses()} flagged · ${totalObjectNotes()} notes`;
 
   if (changedId) updateRowReviewBadges(changedId);
   else state.rows.forEach((row) => updateRowReviewBadges(row.id));
@@ -369,6 +412,10 @@ function bindControls() {
     state.useTextureOverrides = els.textureToggle.checked;
     disposeAll();
     refreshVisibleRows();
+  });
+  els.auditMode.addEventListener('change', () => {
+    state.auditMode = els.auditMode.checked;
+    refreshReviewState();
   });
   els.reviewVersion.addEventListener('input', () => {
     state.currentReviewName = reviewVersionName();
@@ -469,9 +516,11 @@ function renderRow(row) {
         <span class="chip ${symClass}">${escapeHtml(row.symmetryType)}</span>
         <span class="chip pose">${row.poseCount} poses</span>
         <span class="chip review" data-review-chip ${flaggedPoseCount(row.id) ? '' : 'hidden'}>${flaggedPoseCount(row.id)} flagged</span>
+        <span class="chip note" data-note-chip ${getObjectNote(row.id) ? '' : 'hidden'}>note</span>
         ${textureChip}
         ${issueChip}
       </div>
+      <textarea class="object-note" data-object-note aria-label="Object note for ${escapeHtml(row.label)}" placeholder="Object note">${escapeHtml(getObjectNote(row.id))}</textarea>
       <div class="meta-links">
         <a href="viewer.html?id=${encodeURIComponent(row.id)}&overlay=symmetry,tabletop" target="_blank" rel="noopener">viewer</a>
         <a href="objects/${encodeURIComponent(row.id)}/info.json" target="_blank" rel="noopener">info.json</a>
@@ -494,6 +543,8 @@ function renderRow(row) {
       </div>
     </section>
   `;
+  const noteInput = article.querySelector('[data-object-note]');
+  noteInput.addEventListener('input', () => setObjectNote(row.id, noteInput.value));
   return article;
 }
 
@@ -708,6 +759,7 @@ class AuditScene {
 
   handlePotentialPoseClick(event) {
     if (this.kind !== 'tabletop' || !this.scene || !this.pointerDownInfo) return;
+    if (!state.auditMode) return;
     if (this.pointerDownInfo.button !== 0) return;
     const dx = event.clientX - this.pointerDownInfo.x;
     const dy = event.clientY - this.pointerDownInfo.y;

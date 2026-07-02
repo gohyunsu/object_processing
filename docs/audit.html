@@ -155,7 +155,7 @@
     top: 121px;
     z-index: 24;
     display: grid;
-    grid-template-columns: minmax(160px, 240px) minmax(160px, 240px) repeat(4, auto) minmax(140px, 1fr);
+    grid-template-columns: minmax(160px, 220px) minmax(150px, 220px) auto repeat(4, auto) minmax(140px, 1fr);
     gap: 8px;
     align-items: center;
     padding: 10px 0;
@@ -334,7 +334,28 @@
   .chip.texture { color: #b45309; background: #fef3c7; }
   .chip.issue { color: var(--bad); background: #fee2e2; }
   .chip.review { color: var(--bad); background: #fee2e2; border-color: #fecaca; }
+  .chip.note { color: #6d28d9; background: #ede9fe; border-color: #ddd6fe; }
   .chip[hidden] { display: none; }
+
+  .object-note {
+    width: 100%;
+    min-height: 68px;
+    padding: 8px 9px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fbfcfd;
+    color: var(--ink);
+    font: inherit;
+    font-size: 12px;
+    line-height: 1.35;
+    resize: vertical;
+    outline: none;
+  }
+
+  .object-note:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
 
   .meta-links {
     display: flex;
@@ -461,8 +482,9 @@
     .check { justify-content: flex-start; }
     .object-row { grid-template-columns: 1fr; }
     .viewer-cell.tabletop { grid-column: auto; }
-    .object-meta { grid-template-columns: 96px minmax(0, 1fr); grid-template-rows: auto auto auto; }
+    .object-meta { grid-template-columns: 96px minmax(0, 1fr); grid-template-rows: auto auto auto auto; }
     .thumb { grid-row: 1 / span 3; }
+    .object-note { grid-column: 1 / -1; min-height: 60px; }
     .meta-links { align-self: end; }
   }
 </style>
@@ -514,6 +536,7 @@
       <select id="review-select" aria-label="Saved review versions">
         <option value="">Saved versions</option>
       </select>
+      <label class="check"><input id="audit-mode" type="checkbox"> Audit mode</label>
       <button id="save-review" class="primary" type="button">Save</button>
       <button id="export-review" type="button">Export JSON</button>
       <button id="import-review" type="button">Import JSON</button>
@@ -528,6 +551,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/babylonjs@7.34.3/babylon.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/babylonjs-loaders@7.34.3/babylonjs.loaders.min.js"></script>
-  <script src="js/audit.js?v=20260702-willi19-9aaa4ce-review-v1"></script>
+  <script src="js/audit.js?v=20260702-willi19-9aaa4ce-review-v2"></script>
 </body>
 </html>
