@@ -150,7 +150,22 @@
     border-bottom: 1px solid var(--line);
   }
 
+  .reviewbar {
+    position: sticky;
+    top: 121px;
+    z-index: 24;
+    display: grid;
+    grid-template-columns: minmax(160px, 240px) minmax(160px, 240px) repeat(4, auto) minmax(140px, 1fr);
+    gap: 8px;
+    align-items: center;
+    padding: 10px 0;
+    background: rgba(246, 247, 249, 0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+
   input[type="search"],
+  input[type="text"],
   select {
     height: 38px;
     border: 1px solid var(--line);
@@ -167,15 +182,58 @@
     padding: 0 13px;
   }
 
+  input[type="text"] {
+    width: 100%;
+    padding: 0 11px;
+  }
+
   select {
     padding: 0 34px 0 12px;
     cursor: pointer;
   }
 
   input[type="search"]:focus,
+  input[type="text"]:focus,
   select:focus {
     border-color: var(--accent);
     box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+
+  button {
+    height: 38px;
+    padding: 0 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+    color: var(--ink);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  button:hover {
+    border-color: #b8c2d0;
+    background: #f9fafb;
+  }
+
+  button.primary {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #ffffff;
+  }
+
+  button.primary:hover { background: #1d4ed8; }
+
+  .review-status {
+    min-width: 0;
+    color: var(--ink-soft);
+    font-size: 12px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .check {
@@ -275,6 +333,8 @@
   .chip.pose { color: #0f766e; background: #ccfbf1; }
   .chip.texture { color: #b45309; background: #fef3c7; }
   .chip.issue { color: var(--bad); background: #fee2e2; }
+  .chip.review { color: var(--bad); background: #fee2e2; border-color: #fecaca; }
+  .chip[hidden] { display: none; }
 
   .meta-links {
     display: flex;
@@ -388,7 +448,7 @@
     header.audit-head { grid-template-columns: 1fr; }
     .stats {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       justify-content: stretch;
     }
     .stat { min-width: 0; padding: 9px 10px; }
@@ -396,6 +456,8 @@
     .stat span { font-size: 11px; }
     .toolbar { grid-template-columns: 1fr; top: 58px; }
     .toolbar input[type="search"] { grid-column: 1 / -1; }
+    .reviewbar { position: static; grid-template-columns: 1fr 1fr; }
+    .reviewbar .review-status { grid-column: 1 / -1; }
     .check { justify-content: flex-start; }
     .object-row { grid-template-columns: 1fr; }
     .viewer-cell.tabletop { grid-column: auto; }
@@ -429,6 +491,7 @@
         <div class="stat"><b id="stat-visible">0</b><span>visible</span></div>
         <div class="stat"><b id="stat-objects">0</b><span>objects</span></div>
         <div class="stat"><b id="stat-textures">0</b><span>textures</span></div>
+        <div class="stat"><b id="stat-flagged">0</b><span>flagged</span></div>
       </div>
     </header>
 
@@ -446,12 +509,25 @@
       <label class="check"><input id="texture-toggle" type="checkbox" checked> Use texture fixes</label>
     </section>
 
+    <section class="reviewbar" aria-label="Pose review controls">
+      <input id="review-version" type="text" value="scratch" aria-label="Review version name">
+      <select id="review-select" aria-label="Saved review versions">
+        <option value="">Saved versions</option>
+      </select>
+      <button id="save-review" class="primary" type="button">Save</button>
+      <button id="export-review" type="button">Export JSON</button>
+      <button id="import-review" type="button">Import JSON</button>
+      <button id="clear-review" type="button">Clear</button>
+      <span id="review-status" class="review-status">Click tabletop poses to flag suspicious results.</span>
+      <input id="review-file" type="file" accept="application/json,.json" hidden>
+    </section>
+
     <section id="rows" class="rows"></section>
     <div id="empty" class="empty">No objects match the current filters.</div>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/babylonjs@7.34.3/babylon.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/babylonjs-loaders@7.34.3/babylonjs.loaders.min.js"></script>
-  <script src="js/audit.js?v=20260702-willi19-9aaa4ce"></script>
+  <script src="js/audit.js?v=20260702-willi19-9aaa4ce-review-v1"></script>
 </body>
 </html>
