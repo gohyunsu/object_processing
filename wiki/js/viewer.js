@@ -1,5 +1,5 @@
 const HF_BASE = 'https://huggingface.co/datasets/willi19/object_processing/resolve/main/';
-const DATA_VERSION = '20260703-willi19-9aaa4ce-scan1-prev-v12';
+const DATA_VERSION = '20260703-willi19-9aaa4ce-scan1-rerun-v13';
 
 // Pipeline stages the viewer can toggle between. `file` is relative to the
 // object dir on HuggingFace; `simplified` falls back to the legacy mesh.glb.

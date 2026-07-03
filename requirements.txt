@@ -1,6 +1,8 @@
 # Core runtime dependencies for the object_processing pipeline.
 # (Mirrors [project.dependencies] in pyproject.toml — `pip install -e .` uses those.)
 numpy
+coacd
+networkx
 trimesh
 transforms3d
 scipy

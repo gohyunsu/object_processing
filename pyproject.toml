@@ -10,6 +10,8 @@ readme = "readme.md"
 requires-python = ">=3.10"
 dependencies = [
     "numpy",
+    "coacd",
+    "networkx",
     "trimesh",
     "transforms3d",
     "scipy",

@@ -115,7 +115,9 @@ def teaser_pose(obj_name, base):
     info_dir = os.path.join(base, "processed_data", "info")
     stem = POSE_OVERRIDE.get(obj_name)
     if stem is not None:
-        return np.load(os.path.join(info_dir, "tabletop", f"{stem}.npy"))
+        override_path = os.path.join(info_dir, "tabletop", f"{stem}.npy")
+        if os.path.exists(override_path):
+            return np.load(override_path)
 
     pose_files = sorted(glob.glob(os.path.join(info_dir, "tabletop", "*.npy")))
     simp = os.path.join(info_dir, "simplified.json")
