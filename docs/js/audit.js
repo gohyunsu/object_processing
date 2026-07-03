@@ -1,5 +1,5 @@
 const HF_BASE = 'https://huggingface.co/datasets/willi19/object_processing/resolve/main/';
-const DATA_VERSION = '20260703-willi19-9aaa4ce-review-v11';
+const DATA_VERSION = '20260703-willi19-9aaa4ce-scan1-prev-v12';
 const REVIEW_DB_KEY = 'object_processing.audit.review_versions.v1';
 const REVIEW_DRAFT_KEY = 'object_processing.audit.review_draft.v1';
 const REVIEW_MANIFEST_PATH = 'reviews/manifest.json';
@@ -476,7 +476,10 @@ function enrichRow(obj, info) {
     obj,
     info,
     id: obj.id,
+    meshId: obj.mesh_id || obj.id,
     label: obj.label || obj.id,
+    variant: obj.variant || '',
+    compareGroup: obj.compare_group || obj.id,
     symmetry,
     symmetryType: symmetry.type || 'missing',
     poseCount,
@@ -599,13 +602,17 @@ function renderRow(row) {
   const textureChip = row.textureOverride
     ? '<span class="chip texture">texture override</span>'
     : '';
+  const variantChip = row.variant
+    ? `<span class="chip variant">${escapeHtml(row.variant)}</span>`
+    : '';
   const issueChip = row.hasIssue
     ? '<span class="chip issue">missing data</span>'
     : '';
+  const thumbSrc = row.obj.thumb || `objects/${encodeURIComponent(row.id)}/thumb.png`;
 
   article.innerHTML = `
     <aside class="object-meta">
-      <img class="thumb" src="objects/${encodeURIComponent(row.id)}/thumb.png?v=24" alt="${escapeHtml(row.label)}" loading="lazy">
+      <img class="thumb" src="${escapeHtml(thumbSrc)}?v=24" alt="${escapeHtml(row.label)}" loading="lazy">
       <div class="obj-title">
         <h2>${escapeHtml(row.label)}</h2>
         <code>${escapeHtml(row.id)}</code>
@@ -615,6 +622,7 @@ function renderRow(row) {
         <span class="chip pose">${row.poseCount} poses</span>
         <span class="chip review" data-review-chip ${flaggedPoseCount(row.id) ? '' : 'hidden'}>${flaggedPoseCount(row.id)} flagged</span>
         <span class="chip note" data-note-chip ${getObjectNote(row.id) ? '' : 'hidden'}>note</span>
+        ${variantChip}
         ${textureChip}
         ${issueChip}
       </div>
@@ -905,7 +913,7 @@ class AuditScene {
     if (state.useTextureOverrides && this.row.textureOverride) {
       urls.push({ url: this.row.textureOverride.mesh, texture: true });
     }
-    urls.push({ url: `${HF_BASE}objects/${encodeURIComponent(this.row.id)}/mesh.glb`, texture: false });
+    urls.push({ url: `${HF_BASE}objects/${encodeURIComponent(this.row.meshId)}/mesh.glb`, texture: false });
 
     let lastError = null;
     for (const spec of urls) {
@@ -913,7 +921,9 @@ class AuditScene {
         const [rootUrl, file] = splitUrl(spec.url);
         const container = await BABYLON.SceneLoader.LoadAssetContainerAsync(rootUrl, file, this.scene);
         this.loadedFromTextureOverride = spec.texture;
-        const label = spec.texture ? 'texture override' : 'Hugging Face mesh';
+        const label = spec.texture
+          ? 'texture override'
+          : `Hugging Face mesh: ${this.row.meshId}`;
         this.cell.querySelector('.viewer-title span').title = label;
         return container;
       } catch (err) {

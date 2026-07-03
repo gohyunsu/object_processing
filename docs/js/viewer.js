@@ -1,5 +1,5 @@
 const HF_BASE = 'https://huggingface.co/datasets/willi19/object_processing/resolve/main/';
-const DATA_VERSION = '20260702-willi19-9aaa4ce-review-v9';
+const DATA_VERSION = '20260703-willi19-9aaa4ce-scan1-prev-v12';
 
 // Pipeline stages the viewer can toggle between. `file` is relative to the
 // object dir on HuggingFace; `simplified` falls back to the legacy mesh.glb.
@@ -57,13 +57,14 @@ function splitUrl(url) {
   // Stage GLBs normally load from HuggingFace. ?local=1 loads them from
   // objects/{id}/stages/ under this site instead, for testing before upload.
   const useLocal = params.get('local') === '1';
-  const assetBase = (useLocal ? '' : HF_BASE) + 'objects/' + objectId + '/';
 
   const catalog = await fetchJson('catalog.json', null);
   if (!catalog) { showError('Failed to load catalog.'); return; }
 
   const obj = (catalog.objects || []).find(o => o.id === objectId);
   if (!obj) { showError(`Object "${objectId}" not found in catalog.`); return; }
+  const meshObjectId = obj.mesh_id || objectId;
+  const assetBase = (useLocal ? '' : HF_BASE) + 'objects/' + encodeURIComponent(meshObjectId) + '/';
 
   const textureManifest = await fetchJson('texture_overrides/manifest.json', { objects: {} });
   const textureOverride = (textureManifest.objects || {})[objectId] || null;
