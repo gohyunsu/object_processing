@@ -1,0 +1,205 @@
+{
+  "schema": "object-processing-tabletop-pose-review",
+  "schema_version": 1,
+  "data_version": "20260703-willi19-9aaa4ce-review-v11",
+  "version": "tabletop_hyunsu_v4",
+  "saved_at": "2026-07-03T06:37:58.373Z",
+  "source_url": "https://gohyunsu.github.io/object_processing/audit.html",
+  "objects": {
+    "blue_vase": {
+      "n_tabletop_poses": 5,
+      "bad_tabletop_pose_indices": [
+        2
+      ],
+      "note": "checked. unstable."
+    },
+    "baby_beaker": {
+      "n_tabletop_poses": 8,
+      "bad_tabletop_pose_indices": [
+        4
+      ],
+      "note": "checked. physically unstable"
+    },
+    "black_holder_with_handle": {
+      "n_tabletop_poses": 3,
+      "bad_tabletop_pose_indices": [
+        2
+      ],
+      "note": "checked. physically unstable"
+    },
+    "fruit_cutter_base": {
+      "n_tabletop_poses": 6,
+      "bad_tabletop_pose_indices": [
+        4
+      ],
+      "note": "seems unstable"
+    },
+    "fruit_cutter_green": {
+      "n_tabletop_poses": 4,
+      "bad_tabletop_pose_indices": [
+        1
+      ],
+      "note": "unstable pose (물체 놓는 반동 고려하면);반대쪽이 바닥과 맞닿은 pose가 누락됨; 아래 fruit cutter light green 참고"
+    },
+    "green_soap_dispenser": {
+      "n_tabletop_poses": 7,
+      "bad_tabletop_pose_indices": [
+        1,
+        4,
+        5,
+        6
+      ],
+      "note": "물체가 없어 직접 확인하지는 못했지만 unstable할 것으로 보임."
+    },
+    "large_peg": {
+      "n_tabletop_poses": 3,
+      "bad_tabletop_pose_indices": [
+        1
+      ],
+      "note": "직접 확인하지 못했지만 unstable일 것이라 확신함."
+    },
+    "plant_mister": {
+      "n_tabletop_poses": 8,
+      "bad_tabletop_pose_indices": [
+        4,
+        5,
+        7
+      ],
+      "note": "물체가 없어 확인하지 못했지만 unstable할 것."
+    },
+    "potato_mesher": {
+      "n_tabletop_poses": 3,
+      "bad_tabletop_pose_indices": [
+        0
+      ]
+    },
+    "white_wood_handle_watering_can": {
+      "n_tabletop_poses": 5,
+      "bad_tabletop_pose_indices": [
+        3
+      ],
+      "note": "unstable."
+    },
+    "white_watering_can": {
+      "n_tabletop_poses": 4,
+      "bad_tabletop_pose_indices": [
+        3
+      ],
+      "note": "물체가 없지만 unstable할 것으로 예상됨."
+    },
+    "white_table_lamp": {
+      "n_tabletop_poses": 3,
+      "bad_tabletop_pose_indices": [
+        2
+      ],
+      "note": "unstable."
+    },
+    "white_plastic_box": {
+      "n_tabletop_poses": 4,
+      "bad_tabletop_pose_indices": [
+        3
+      ],
+      "note": "checked. unstable."
+    },
+    "wateringcan": {
+      "n_tabletop_poses": 6,
+      "bad_tabletop_pose_indices": [
+        4
+      ],
+      "note": "unstable."
+    },
+    "washing_brush2": {
+      "n_tabletop_poses": 5,
+      "bad_tabletop_pose_indices": [
+        3
+      ],
+      "note": "duplicate"
+    },
+    "toothbrush_holder": {
+      "n_tabletop_poses": 10,
+      "bad_tabletop_pose_indices": [
+        0,
+        7
+      ],
+      "note": "물체가 없지만 unstable 예상됨."
+    },
+    "tea_case": {
+      "n_tabletop_poses": 2,
+      "bad_tabletop_pose_indices": [
+        0,
+        1
+      ],
+      "note": "그냥 이상함"
+    },
+    "spray_bottle": {
+      "n_tabletop_poses": 6,
+      "bad_tabletop_pose_indices": [
+        1,
+        4,
+        5
+      ],
+      "note": "unstable."
+    },
+    "soap_dispenser": {
+      "n_tabletop_poses": 6,
+      "bad_tabletop_pose_indices": [
+        5
+      ],
+      "note": "unstable."
+    },
+    "frog_bowl": {
+      "n_tabletop_poses": 4,
+      "bad_tabletop_pose_indices": [
+        3
+      ],
+      "note": "checked. 간신히 균형 유지됨. unstable."
+    },
+    "standing_frame": {
+      "n_tabletop_poses": 3,
+      "bad_tabletop_pose_indices": [
+        1
+      ],
+      "note": "물체가 없지만 unstable할 것."
+    },
+    "brass_pot": {
+      "n_tabletop_poses": 3,
+      "note": "symmetry 축이 겹친 것으로 보임"
+    },
+    "redcar": {
+      "n_tabletop_poses": 6,
+      "note": "thumbnail"
+    },
+    "paper_bowl": {
+      "n_tabletop_poses": 2,
+      "note": "strange"
+    },
+    "paper_cup": {
+      "n_tabletop_poses": 3,
+      "note": "strange"
+    },
+    "pepper_tuna": {
+      "n_tabletop_poses": 2,
+      "note": "strange"
+    },
+    "tissue_box": {
+      "n_tabletop_poses": 2,
+      "note": "strangee"
+    },
+    "yellow_funnel": {
+      "n_tabletop_poses": 2,
+      "note": "axis"
+    },
+    "baseball": {
+      "n_tabletop_poses": 1,
+      "note": "too many axes?"
+    },
+    "frog_cup": {
+      "n_tabletop_poses": 8,
+      "note": "다 안정함을 확인함. flag 지움."
+    },
+    "green_cactus_vase": {
+      "n_tabletop_poses": 5,
+      "note": "unflagged. 가능함을 확인."
+    }
+  }
+}
