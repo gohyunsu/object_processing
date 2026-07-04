@@ -18,6 +18,7 @@ from pathlib import Path
 import numpy as np
 import trimesh
 from trimesh.registration import icp
+from trimesh.visual.material import PBRMaterial, SimpleMaterial
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -192,11 +193,35 @@ def align_scan_to_prev(scan_mesh: trimesh.Trimesh, prev_mesh: trimesh.Trimesh) -
     return best_transform, best_cost / ALIGNMENT_SAMPLES
 
 
+def normalize_glb_materials(scene: trimesh.Scene) -> None:
+    """Export scan textures as matte PBR instead of Artec's glossy OBJ material.
+
+    Artec MTL files use ``Ks 1`` and ``Ns 1000``.  Trimesh converts that Phong
+    shininess to a very low glTF roughness, which looks much darker in Babylon
+    than the OBJ does in typical ambient/diffuse viewers.  Keep the texture
+    image and diffuse color, but make the generated GLB material non-metallic
+    and fully rough so it behaves like a diffuse object in glTF viewers.
+    """
+    for geometry in scene.geometry.values():
+        material = getattr(geometry.visual, "material", None)
+        if isinstance(material, SimpleMaterial):
+            geometry.visual.material = PBRMaterial(
+                baseColorTexture=material.image,
+                baseColorFactor=material.diffuse,
+                metallicFactor=0.0,
+                roughnessFactor=1.0,
+            )
+        elif isinstance(material, PBRMaterial):
+            material.metallicFactor = 0.0
+            material.roughnessFactor = 1.0
+
+
 def export_texture_override(target_obj: Path, object_id: str) -> tuple[str, int]:
     out_dir = REPO_ROOT / "docs" / "texture_overrides" / object_id
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / "mesh.glb"
     scene = trimesh.load(target_obj, force="scene")
+    normalize_glb_materials(scene)
     scene.export(out_path, file_type="glb")
     return str(out_path.relative_to(REPO_ROOT / "docs")), out_path.stat().st_size
 
