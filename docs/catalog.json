@@ -374,16 +374,6 @@
       "compare_group": "paper_bowl"
     },
     {
-      "id": "paper_bowl_prev",
-      "label": "Paper Bowl (prev)",
-      "category": "",
-      "url": "objects/paper_bowl/mesh.glb",
-      "thumb": "objects/paper_bowl_prev/thumb.png",
-      "variant": "prev",
-      "compare_group": "paper_bowl",
-      "mesh_id": "paper_bowl"
-    },
-    {
       "id": "paper_box",
       "label": "Paper Box",
       "category": "",
@@ -400,16 +390,6 @@
       "compare_group": "paper_cup"
     },
     {
-      "id": "paper_cup_prev",
-      "label": "Paper Cup (prev)",
-      "category": "",
-      "url": "objects/paper_cup/mesh.glb",
-      "thumb": "objects/paper_cup_prev/thumb.png",
-      "variant": "prev",
-      "compare_group": "paper_cup",
-      "mesh_id": "paper_cup"
-    },
-    {
       "id": "pastel_blue_cup",
       "label": "Pastel Blue Cup",
       "category": "",
@@ -424,16 +404,6 @@
       "thumb": "objects/pepper_tuna/thumb.png",
       "variant": "current",
       "compare_group": "pepper_tuna"
-    },
-    {
-      "id": "pepper_tuna_prev",
-      "label": "Pepper Tuna (prev)",
-      "category": "",
-      "url": "objects/pepper_tuna/mesh.glb",
-      "thumb": "objects/pepper_tuna_prev/thumb.png",
-      "variant": "prev",
-      "compare_group": "pepper_tuna",
-      "mesh_id": "pepper_tuna"
     },
     {
       "id": "pepper_tuna_light",
@@ -592,16 +562,6 @@
       "compare_group": "tea_case"
     },
     {
-      "id": "tea_case_prev",
-      "label": "Tea Case (prev)",
-      "category": "",
-      "url": "objects/tea_case/mesh.glb",
-      "thumb": "objects/tea_case_prev/thumb.png",
-      "variant": "prev",
-      "compare_group": "tea_case",
-      "mesh_id": "tea_case"
-    },
-    {
       "id": "tennis_ball",
       "label": "Tennis Ball",
       "category": "",
@@ -609,16 +569,6 @@
       "thumb": "objects/tennis_ball/thumb.png",
       "variant": "current",
       "compare_group": "tennis_ball"
-    },
-    {
-      "id": "tennis_ball_prev",
-      "label": "Tennis Ball (prev)",
-      "category": "",
-      "url": "objects/tennis_ball/mesh.glb",
-      "thumb": "objects/tennis_ball_prev/thumb.png",
-      "variant": "prev",
-      "compare_group": "tennis_ball",
-      "mesh_id": "tennis_ball"
     },
     {
       "id": "thermo_clock",
@@ -635,16 +585,6 @@
       "thumb": "objects/tissue_box/thumb.png",
       "variant": "current",
       "compare_group": "tissue_box"
-    },
-    {
-      "id": "tissue_box_prev",
-      "label": "Tissue Box (prev)",
-      "category": "",
-      "url": "objects/tissue_box/mesh.glb",
-      "thumb": "objects/tissue_box_prev/thumb.png",
-      "variant": "prev",
-      "compare_group": "tissue_box",
-      "mesh_id": "tissue_box"
     },
     {
       "id": "toilet_roll_holder_steel",

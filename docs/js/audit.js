@@ -1,5 +1,5 @@
 const HF_BASE = 'https://huggingface.co/datasets/willi19/object_processing/resolve/main/';
-const DATA_VERSION = '20260704-willi19-9aaa4ce-scan1-aligned-v17';
+const DATA_VERSION = '20260704-willi19-9aaa4ce-scan1-aligned-v18';
 const REVIEW_DB_KEY = 'object_processing.audit.review_versions.v1';
 const REVIEW_DRAFT_KEY = 'object_processing.audit.review_draft.v1';
 const REVIEW_MANIFEST_PATH = 'reviews/manifest.json';
@@ -612,7 +612,7 @@ function renderRow(row) {
 
   article.innerHTML = `
     <aside class="object-meta">
-      <img class="thumb" src="${escapeHtml(thumbSrc)}?v=24" alt="${escapeHtml(row.label)}" loading="lazy">
+      <img class="thumb" src="${escapeHtml(thumbSrc)}?v=25" alt="${escapeHtml(row.label)}" loading="lazy">
       <div class="obj-title">
         <h2>${escapeHtml(row.label)}</h2>
         <code>${escapeHtml(row.id)}</code>
