@@ -1,5 +1,5 @@
 const HF_BASE = 'https://huggingface.co/datasets/willi19/object_processing/resolve/main/';
-const DATA_VERSION = '20260704-willi19-9aaa4ce-scan1-aligned-v15';
+const DATA_VERSION = '20260704-willi19-9aaa4ce-scan1-aligned-v16';
 const REVIEW_DB_KEY = 'object_processing.audit.review_versions.v1';
 const REVIEW_DRAFT_KEY = 'object_processing.audit.review_draft.v1';
 const REVIEW_MANIFEST_PATH = 'reviews/manifest.json';
@@ -595,11 +595,7 @@ function renderRows() {
 
 function renderRow(row) {
   const article = document.createElement('article');
-  article.className = [
-    'object-row',
-    row.textureOverride ? 'has-texture-override' : '',
-    isRowReviewMarked(row.id) ? 'review-marked' : '',
-  ].filter(Boolean).join(' ');
+  article.className = isRowReviewMarked(row.id) ? 'object-row review-marked' : 'object-row';
   article.dataset.id = row.id;
 
   const symClass = row.symmetryType === 'none' ? 'none' : 'sym';
@@ -779,7 +775,6 @@ class AuditScene {
       this.container = await this.loadContainer();
       if (this.disposed) return;
       this.container.addAllToScene();
-      this.boostTextureOverrideDisplay();
       this.root = this.contentRoot();
       this.applyTextureOverrideScale();
 
@@ -979,29 +974,6 @@ class AuditScene {
     if (!Number.isFinite(sourceMax) || sourceMax <= 0 || !Number.isFinite(targetMax) || targetMax <= 0) return;
     const s = targetMax / sourceMax;
     this.root.scaling.scaleInPlace(s);
-  }
-
-  boostTextureOverrideDisplay() {
-    if (!this.loadedFromTextureOverride || !this.container) return;
-    const seen = new Set();
-    const materials = [
-      ...(this.container.materials || []),
-      ...this.container.meshes.map((mesh) => mesh.material).filter(Boolean),
-    ];
-    materials.forEach((material) => {
-      if (!material || seen.has(material)) return;
-      seen.add(material);
-      if ('directIntensity' in material) material.directIntensity = Math.max(material.directIntensity || 1, 1.35);
-      if ('environmentIntensity' in material) material.environmentIntensity = Math.max(material.environmentIntensity || 1, 1.35);
-      if ('cameraExposure' in material) material.cameraExposure = Math.max(material.cameraExposure || 1, 1.12);
-      ['albedoTexture', 'baseTexture', 'diffuseTexture'].forEach((key) => {
-        const texture = material[key];
-        if (texture && 'level' in texture) texture.level = Math.max(texture.level || 1, 1.24);
-      });
-      if ('emissiveColor' in material) {
-        material.emissiveColor = new BABYLON.Color3(0.035, 0.035, 0.035);
-      }
-    });
   }
 
   buildSymmetryView() {
