@@ -50,7 +50,8 @@
       ],
       "mesh": "texture_overrides/paper_cup/mesh.glb",
       "source": "Object_3DScan_1/PaperCup/PaperCup.obj",
-      "size_bytes": 13204368
+      "size_bytes": 13204368,
+      "rendering": "double_sided"
     },
     "tennis_ball": {
       "source_bounds_mm": [
@@ -102,7 +103,8 @@
       ],
       "mesh": "texture_overrides/tennis_ball/mesh.glb",
       "source": "Object_3DScan_1/Tennis_Ball/Tennis_Ball.obj",
-      "size_bytes": 5214484
+      "size_bytes": 5214480,
+      "rendering": "double_sided"
     },
     "tissue_box": {
       "source_bounds_mm": [
@@ -154,7 +156,8 @@
       ],
       "mesh": "texture_overrides/tissue_box/mesh.glb",
       "source": "Object_3DScan_1/Tissue/Tissue.obj",
-      "size_bytes": 5735788
+      "size_bytes": 5735784,
+      "rendering": "double_sided"
     },
     "pepper_tuna": {
       "source_bounds_mm": [
@@ -206,7 +209,8 @@
       ],
       "mesh": "texture_overrides/pepper_tuna/mesh.glb",
       "source": "Object_3DScan_1/Tuna_Can/Tuna_Can.obj",
-      "size_bytes": 11920648
+      "size_bytes": 11920644,
+      "rendering": "double_sided"
     },
     "paper_bowl": {
       "source_bounds_mm": [
@@ -258,7 +262,8 @@
       ],
       "mesh": "texture_overrides/paper_bowl/mesh.glb",
       "source": "Object_3DScan_1/Paper_Soup_Bowl/Paper_Soup_Bowl.obj",
-      "size_bytes": 7773892
+      "size_bytes": 7773888,
+      "rendering": "double_sided"
     },
     "tea_case": {
       "source_bounds_mm": [
@@ -310,7 +315,8 @@
       ],
       "mesh": "texture_overrides/tea_case/mesh.glb",
       "source": "Object_3DScan_1/Osulloc/Osulloc.obj",
-      "size_bytes": 6837060
+      "size_bytes": 6837056,
+      "rendering": "double_sided"
     }
   }
 }

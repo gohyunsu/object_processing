@@ -13,6 +13,7 @@ import itertools
 import json
 import os
 import shutil
+import struct
 from pathlib import Path
 
 import numpy as np
@@ -216,6 +217,46 @@ def normalize_glb_materials(scene: trimesh.Scene) -> None:
             material.roughnessFactor = 1.0
 
 
+def set_glb_materials_double_sided(glb_path: Path) -> None:
+    """Mark all glTF materials as double-sided after GLB export.
+
+    Trimesh preserves the scanned surfaces as single-sided glTF materials.  For
+    thin/open scans this makes back faces disappear in Babylon, so interior views
+    look hollow.  ``doubleSided`` keeps the same exterior texture visible from
+    the reverse side without changing geometry.
+    """
+    data = glb_path.read_bytes()
+    magic, version, _ = struct.unpack_from("<III", data, 0)
+    if magic != 0x46546C67 or version != 2:
+        raise ValueError(f"{glb_path}: expected glTF 2.0 GLB")
+
+    offset = 12
+    chunks = []
+    while offset < len(data):
+        chunk_len, chunk_type = struct.unpack_from("<II", data, offset)
+        chunk = data[offset + 8:offset + 8 + chunk_len]
+        chunks.append((chunk_type, chunk))
+        offset += 8 + chunk_len
+
+    if not chunks or chunks[0][0] != 0x4E4F534A:
+        raise ValueError(f"{glb_path}: first chunk is not JSON")
+
+    gltf = json.loads(chunks[0][1].rstrip(b" \t\r\n\0").decode("utf-8"))
+    for material in gltf.get("materials", []):
+        material["doubleSided"] = True
+
+    json_bytes = json.dumps(gltf, separators=(",", ":")).encode("utf-8")
+    json_bytes += b" " * ((4 - len(json_bytes) % 4) % 4)
+    chunks[0] = (0x4E4F534A, json_bytes)
+
+    total = 12 + sum(8 + len(chunk) for _, chunk in chunks)
+    out = bytearray(struct.pack("<III", 0x46546C67, 2, total))
+    for chunk_type, chunk in chunks:
+        out.extend(struct.pack("<II", len(chunk), chunk_type))
+        out.extend(chunk)
+    glb_path.write_bytes(out)
+
+
 def export_texture_override(target_obj: Path, object_id: str) -> tuple[str, int]:
     out_dir = REPO_ROOT / "docs" / "texture_overrides" / object_id
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -223,6 +264,7 @@ def export_texture_override(target_obj: Path, object_id: str) -> tuple[str, int]
     scene = trimesh.load(target_obj, force="scene")
     normalize_glb_materials(scene)
     scene.export(out_path, file_type="glb")
+    set_glb_materials_double_sided(out_path)
     return str(out_path.relative_to(REPO_ROOT / "docs")), out_path.stat().st_size
 
 

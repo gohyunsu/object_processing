@@ -1,7 +1,7 @@
 {
   "schema": "object-processing-tabletop-pose-review",
   "schema_version": 1,
-  "data_version": "20260704-willi19-9aaa4ce-symmetry-v20",
+  "data_version": "20260704-willi19-9aaa4ce-texture-double-sided-v21",
   "version": "tabletop_hyunsu_v5_filtered",
   "saved_at": "2026-07-04T06:02:35.631Z",
   "source_url": "https://gohyunsu.github.io/object_processing/audit.html",

@@ -1,5 +1,5 @@
 const HF_BASE = 'https://huggingface.co/datasets/willi19/object_processing/resolve/main/';
-const DATA_VERSION = '20260704-willi19-9aaa4ce-symmetry-v20';
+const DATA_VERSION = '20260704-willi19-9aaa4ce-texture-double-sided-v21';
 const REVIEW_DB_KEY = 'object_processing.audit.review_versions.v1';
 const REVIEW_DRAFT_KEY = 'object_processing.audit.review_draft.v1';
 const REVIEW_MANIFEST_PATH = 'reviews/manifest.json';
@@ -614,7 +614,7 @@ function renderRow(row) {
 
   article.innerHTML = `
     <aside class="object-meta">
-      <img class="thumb" src="${escapeHtml(thumbSrc)}?v=25" alt="${escapeHtml(row.label)}" loading="lazy">
+      <img class="thumb" src="${escapeHtml(thumbSrc)}?v=26" alt="${escapeHtml(row.label)}" loading="lazy">
       <div class="obj-title">
         <h2>${escapeHtml(row.label)}</h2>
         <code>${escapeHtml(row.id)}</code>
@@ -723,6 +723,13 @@ function setNodeMatrix(node, matrix) {
   node.scaling = scale;
   node.rotationQuaternion = rotation;
   node.position = position;
+}
+
+function makeContainerMaterialsDoubleSided(container) {
+  (container.materials || []).forEach((material) => {
+    material.backFaceCulling = false;
+    if ('twoSidedLighting' in material) material.twoSidedLighting = true;
+  });
 }
 
 function quatFromTo(from, to) {
@@ -938,8 +945,9 @@ class AuditScene {
     let lastError = null;
     for (const spec of urls) {
       try {
-        const [rootUrl, file] = splitUrl(spec.url);
+        const [rootUrl, file] = splitUrl(versionedDataUrl(spec.url));
         const container = await BABYLON.SceneLoader.LoadAssetContainerAsync(rootUrl, file, this.scene);
+        if (spec.texture) makeContainerMaterialsDoubleSided(container);
         this.loadedFromTextureOverride = spec.texture;
         const label = spec.texture
           ? 'texture override'

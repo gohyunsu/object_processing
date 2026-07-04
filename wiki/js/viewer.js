@@ -1,5 +1,5 @@
 const HF_BASE = 'https://huggingface.co/datasets/willi19/object_processing/resolve/main/';
-const DATA_VERSION = '20260704-willi19-9aaa4ce-symmetry-v20';
+const DATA_VERSION = '20260704-willi19-9aaa4ce-texture-double-sided-v21';
 
 // Pipeline stages the viewer can toggle between. `file` is relative to the
 // object dir on HuggingFace; `simplified` falls back to the legacy mesh.glb.
@@ -47,6 +47,13 @@ function splitUrl(url) {
   const i = url.lastIndexOf('/');
   if (i < 0) return ['', url];
   return [url.slice(0, i + 1), url.slice(i + 1)];
+}
+
+function makeContainerMaterialsDoubleSided(container) {
+  (container.materials || []).forEach((material) => {
+    material.backFaceCulling = false;
+    if ('twoSidedLighting' in material) material.twoSidedLighting = true;
+  });
 }
 
 (async function () {
@@ -195,6 +202,7 @@ function splitUrl(url) {
 
     const loaded = await loadStageContainer(stage);
     currentContainer = loaded.container;
+    if (loaded.replacement) makeContainerMaterialsDoubleSided(currentContainer);
     currentContainer.addAllToScene();
     loadedStageId = stage.id;
     loadedFromReplacement = loaded.replacement;
