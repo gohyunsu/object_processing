@@ -1,5 +1,5 @@
 const HF_BASE = 'https://huggingface.co/datasets/willi19/object_processing/resolve/main/';
-const DATA_VERSION = '20260704-willi19-9aaa4ce-scan1-aligned-v14';
+const DATA_VERSION = '20260704-willi19-9aaa4ce-scan1-aligned-v15';
 const REVIEW_DB_KEY = 'object_processing.audit.review_versions.v1';
 const REVIEW_DRAFT_KEY = 'object_processing.audit.review_draft.v1';
 const REVIEW_MANIFEST_PATH = 'reviews/manifest.json';
@@ -595,7 +595,11 @@ function renderRows() {
 
 function renderRow(row) {
   const article = document.createElement('article');
-  article.className = isRowReviewMarked(row.id) ? 'object-row review-marked' : 'object-row';
+  article.className = [
+    'object-row',
+    row.textureOverride ? 'has-texture-override' : '',
+    isRowReviewMarked(row.id) ? 'review-marked' : '',
+  ].filter(Boolean).join(' ');
   article.dataset.id = row.id;
 
   const symClass = row.symmetryType === 'none' ? 'none' : 'sym';
@@ -775,6 +779,7 @@ class AuditScene {
       this.container = await this.loadContainer();
       if (this.disposed) return;
       this.container.addAllToScene();
+      this.boostTextureOverrideDisplay();
       this.root = this.contentRoot();
       this.applyTextureOverrideScale();
 
@@ -815,9 +820,27 @@ class AuditScene {
     this.camera.angularSensibilityY = 2600;
 
     const hemi = new BABYLON.HemisphericLight(`${this.kind}_hemi`, new BABYLON.Vector3(0, 0, 1), this.scene);
-    hemi.intensity = 0.85;
+    hemi.intensity = 1.15;
     const dir = new BABYLON.DirectionalLight(`${this.kind}_dir`, new BABYLON.Vector3(-1, -1.4, -0.9), this.scene);
-    dir.intensity = 0.55;
+    dir.intensity = 0.72;
+
+    // Texture override meshes use glTF PBR materials.  The grid view has many
+    // tiny independent scenes, so add the same lightweight IBL/tone mapping used
+    // by the single-object viewer; otherwise these scans render noticeably dim.
+    try {
+      this.scene.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(
+        'https://assets.babylonjs.com/environments/environmentSpecular.env',
+        this.scene,
+      );
+      this.scene.environmentIntensity = 1.15;
+      const ip = this.scene.imageProcessingConfiguration;
+      ip.toneMappingEnabled = true;
+      ip.toneMappingType = BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES;
+      ip.exposure = 1.15;
+      ip.contrast = 1.05;
+    } catch (err) {
+      // Direct lights above are enough for offline/local use.
+    }
   }
 
   bindCanvasInput() {
@@ -956,6 +979,29 @@ class AuditScene {
     if (!Number.isFinite(sourceMax) || sourceMax <= 0 || !Number.isFinite(targetMax) || targetMax <= 0) return;
     const s = targetMax / sourceMax;
     this.root.scaling.scaleInPlace(s);
+  }
+
+  boostTextureOverrideDisplay() {
+    if (!this.loadedFromTextureOverride || !this.container) return;
+    const seen = new Set();
+    const materials = [
+      ...(this.container.materials || []),
+      ...this.container.meshes.map((mesh) => mesh.material).filter(Boolean),
+    ];
+    materials.forEach((material) => {
+      if (!material || seen.has(material)) return;
+      seen.add(material);
+      if ('directIntensity' in material) material.directIntensity = Math.max(material.directIntensity || 1, 1.35);
+      if ('environmentIntensity' in material) material.environmentIntensity = Math.max(material.environmentIntensity || 1, 1.35);
+      if ('cameraExposure' in material) material.cameraExposure = Math.max(material.cameraExposure || 1, 1.12);
+      ['albedoTexture', 'baseTexture', 'diffuseTexture'].forEach((key) => {
+        const texture = material[key];
+        if (texture && 'level' in texture) texture.level = Math.max(texture.level || 1, 1.24);
+      });
+      if ('emissiveColor' in material) {
+        material.emissiveColor = new BABYLON.Color3(0.035, 0.035, 0.035);
+      }
+    });
   }
 
   buildSymmetryView() {
