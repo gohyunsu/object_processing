@@ -1,7 +1,7 @@
 {
   "schema": "object-processing-tabletop-pose-review",
   "schema_version": 1,
-  "data_version": "20260704-willi19-9aaa4ce-v6-tuna-tissue-v23",
+  "data_version": "20260704-willi19-9aaa4ce-v6-tuna-tissue-v24",
   "version": "tabletop_hyunsu_v6",
   "saved_at": "2026-07-04T06:26:25.383Z",
   "source_url": "https://gohyunsu.github.io/object_processing/audit.html",

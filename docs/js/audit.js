@@ -1,5 +1,5 @@
 const HF_BASE = 'https://huggingface.co/datasets/willi19/object_processing/resolve/main/';
-const DATA_VERSION = '20260704-willi19-9aaa4ce-v6-tuna-tissue-v23';
+const DATA_VERSION = '20260704-willi19-9aaa4ce-v6-tuna-tissue-v24';
 const REVIEW_DB_KEY = 'object_processing.audit.review_versions.v1';
 const REVIEW_DRAFT_KEY = 'object_processing.audit.review_draft.v1';
 const REVIEW_MANIFEST_PATH = 'reviews/manifest.json';
@@ -278,7 +278,7 @@ function loadSavedReviewList() {
 }
 
 async function loadBundledReviewList() {
-  const manifest = await fetchJson(REVIEW_MANIFEST_PATH, { versions: [] });
+  const manifest = await fetchJson(versionedDataUrl(REVIEW_MANIFEST_PATH), { versions: [] });
   state.bundledReviews = {};
   state.defaultBundledReview = String(manifest && manifest.default_version ? manifest.default_version : '').trim();
   const versions = Array.isArray(manifest && manifest.versions) ? manifest.versions : [];
@@ -297,7 +297,7 @@ async function loadBundledReviewList() {
 
 async function loadBundledReview(name, { dirty = false } = {}) {
   if (!name || !state.bundledReviews[name]) return false;
-  const payload = await fetchJson(state.bundledReviews[name].path, null);
+  const payload = await fetchJson(versionedDataUrl(state.bundledReviews[name].path), null);
   if (!payload) return false;
   loadReviewPayload(payload, { dirty });
   selectReviewOption('bundled', name);
