@@ -27,9 +27,9 @@ import numpy as np
 # NOTE: these stems were remapped after the symmetry / tabletop-dedup fix
 # regenerated every pose file with new indices. Each was rematched to its
 # original curated resting face by yaw-invariant up-vector (near-exact matches).
-# pepper_tuna, pepper_tuna_light, soaptray and yellow_funnel lost their curated
-# resting face during regeneration and now fall back to the auto-selected
-# tallest pose — re-curate if their hero shot looks wrong.
+# soaptray and yellow_funnel lost their curated resting face during regeneration
+# and now fall back to the auto-selected tallest pose — re-curate if their hero
+# shot looks wrong.
 POSE_OVERRIDE = {
     "blue_alarm": "003",   # stands the clock up on its legs (vs lying flat)
     "apple": "004",
@@ -60,8 +60,12 @@ POSE_OVERRIDE = {
     "mug_holder": "005",
     "jja_ramen": "001",
     "pink_clock": "003",
-    "paper_bowl": "001",
+    "paper_bowl": "000",
     "paper_cup": "006",
+    "pepper_tuna": "000",
+    "pepper_tuna_light": "002",
+    "pepsi": "008",
+    "pepsi_light": "008",
     "yellow_plastic_cup": "017",
     "wood_tray_big": "002",
     "wood_tray_small": "000",
@@ -71,8 +75,11 @@ POSE_OVERRIDE = {
     "white_plastic_box": "002",
     "white_soap_dish": "001",
     "white_table_lamp": "011",
-    "white_watering_can": "003",
+    "toilet_roll_holder_steel": "002",
+    "white_clock": "024",
+    "white_watering_can": "022",
     "magazine_file": "006",
+    "redcar": "005",
     "shoe_organizer": "000",
     "smallbowl": "001",
     "spam_can": "002",

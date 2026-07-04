@@ -1,5 +1,5 @@
 const HF_BASE = 'https://huggingface.co/datasets/willi19/object_processing/resolve/main/';
-const DATA_VERSION = '20260704-willi19-9aaa4ce-v6-tuna-tissue-label-v25';
+const DATA_VERSION = '20260704-willi19-9aaa4ce-thumbnail-poses-v26';
 const REVIEW_DB_KEY = 'object_processing.audit.review_versions.v1';
 const REVIEW_DRAFT_KEY = 'object_processing.audit.review_draft.v1';
 const REVIEW_MANIFEST_PATH = 'reviews/manifest.json';
@@ -611,10 +611,11 @@ function renderRow(row) {
     ? '<span class="chip issue">missing data</span>'
     : '';
   const thumbSrc = row.obj.thumb || `objects/${encodeURIComponent(row.id)}/thumb.png`;
+  const thumbUrl = versionedDataUrl(thumbSrc);
 
   article.innerHTML = `
     <aside class="object-meta">
-      <img class="thumb" src="${escapeHtml(thumbSrc)}?v=26" alt="${escapeHtml(row.label)}" loading="lazy">
+      <img class="thumb" src="${escapeHtml(thumbUrl)}" alt="${escapeHtml(row.label)}" loading="lazy">
       <div class="obj-title">
         <h2>${escapeHtml(row.label)}</h2>
         <code>${escapeHtml(row.id)}</code>
