@@ -1,5 +1,5 @@
 const HF_BASE = 'https://huggingface.co/datasets/willi19/object_processing/resolve/main/';
-const DATA_VERSION = '20260704-willi19-9aaa4ce-v6-tuna-tissue-v24';
+const DATA_VERSION = '20260704-willi19-9aaa4ce-v6-tuna-tissue-label-v25';
 const REVIEW_DB_KEY = 'object_processing.audit.review_versions.v1';
 const REVIEW_DRAFT_KEY = 'object_processing.audit.review_draft.v1';
 const REVIEW_MANIFEST_PATH = 'reviews/manifest.json';
@@ -1079,6 +1079,9 @@ class AuditScene {
     const label = BABYLON.MeshBuilder.CreatePlane(`pose_label_${index}`, {
       width: maxExtent * 0.68,
       height: maxExtent * 0.28,
+      sideOrientation: BABYLON.Mesh.DOUBLESIDE,
+      frontUVs: new BABYLON.Vector4(0, 1, 1, 0),
+      backUVs: new BABYLON.Vector4(1, 1, 0, 0),
     }, this.scene);
     label.material = material;
     label.position = new BABYLON.Vector3(dx, dy, maxExtent * 0.92);
