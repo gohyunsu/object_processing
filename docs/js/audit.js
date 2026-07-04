@@ -1,5 +1,5 @@
 const HF_BASE = 'https://huggingface.co/datasets/willi19/object_processing/resolve/main/';
-const DATA_VERSION = '20260704-willi19-9aaa4ce-scan1-filtered-v19';
+const DATA_VERSION = '20260704-willi19-9aaa4ce-symmetry-v20';
 const REVIEW_DB_KEY = 'object_processing.audit.review_versions.v1';
 const REVIEW_DRAFT_KEY = 'object_processing.audit.review_draft.v1';
 const REVIEW_MANIFEST_PATH = 'reviews/manifest.json';
@@ -468,9 +468,11 @@ function enrichRow(obj, info) {
     ? info.n_tabletop_poses
     : poses.length;
   const axes = Array.isArray(symmetry.axes) ? symmetry.axes : [];
-  const axesLabel = axes.length
-    ? axes.map((axis) => `${axis.fold}-fold`).join(', ')
-    : 'no rotational axis';
+  const axesLabel = symmetry.type === 'Dinf'
+    ? 'Dinf axes hidden'
+    : axes.length
+      ? axes.map((axis) => `${axis.fold}-fold`).join(', ')
+      : 'no rotational axis';
   const textureOverride = state.textureOverrides[obj.id] || null;
   return {
     obj,

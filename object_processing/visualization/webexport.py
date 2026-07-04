@@ -41,6 +41,31 @@ _STAGES = {
 }
 
 
+def _filtered_symmetry_axes(sym, duplicate_dot=0.98):
+    """Return display axes after removing visualization-only redundancy.
+
+    ``Dinf`` objects can produce many equally valid axes, so the web viewer hides
+    them entirely. Near-collinear axes for other symmetry types are treated as
+    duplicates and the lower-residual hypothesis is kept.
+    """
+    if sym.get("type") == "Dinf":
+        return []
+
+    kept = []
+    axes = sym.get("axes") or []
+    axes = sorted(axes, key=lambda a: float(a.get("residual", float("inf"))))
+    for axis in axes:
+        vec = np.asarray(axis.get("axis", []), dtype=float)
+        norm = np.linalg.norm(vec)
+        if norm <= 1e-12:
+            continue
+        vec = vec / norm
+        if any(abs(float(np.dot(vec, kept_vec))) >= duplicate_dot for kept_vec, _ in kept):
+            continue
+        kept.append((vec, axis))
+    return [{"axis": axis["axis"], "fold": axis["fold"]} for _, axis in kept]
+
+
 def _color_components(mesh):
     """Paint each connected component of ``mesh`` a distinct palette color."""
     parts = mesh.split(only_watertight=False)
@@ -103,7 +128,7 @@ def export_web_info(obj_name, out_path, root=None, max_poses=24):
             "type": sym["type"],
             "center": sym["center"],
             "scale": sym["scale"],
-            "axes": [{"axis": a["axis"], "fold": a["fold"]} for a in sym["axes"]],
+            "axes": _filtered_symmetry_axes(sym),
         }
 
     # Stable tabletop poses (4x4 SE3 each).
