@@ -159,59 +159,6 @@
       "size_bytes": 5735784,
       "rendering": "double_sided"
     },
-    "pepper_tuna": {
-      "source_bounds_mm": [
-        [
-          -39.041077,
-          -41.634354,
-          -58.665047
-        ],
-        [
-          62.656,
-          62.181858,
-          39.015633
-        ]
-      ],
-      "source_extents_mm": [
-        101.69707700000001,
-        103.81621200000001,
-        97.68068
-      ],
-      "transform": "bbox_centered_mm_to_m_then_prev_frame_rigid_icp",
-      "alignment_target": "pepper_tuna_prev/raw_mesh/pepper_tuna.obj",
-      "alignment_samples": 1200,
-      "alignment_cost": 9.34264640241038e-10,
-      "alignment_transform": [
-        [
-          -0.03826965685739533,
-          0.7582357459899508,
-          0.6508563488720686,
-          0.00025501792270564894
-        ],
-        [
-          -0.01668994097708306,
-          0.6507576196872967,
-          -0.7591020789650748,
-          -0.00043648576896461466
-        ],
-        [
-          -0.9991280594769607,
-          -0.03991333012896485,
-          -0.012249360955480171,
-          0.0003936563851798236
-        ],
-        [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ]
-      ],
-      "mesh": "texture_overrides/pepper_tuna/mesh.glb",
-      "source": "Object_3DScan_1/Tuna_Can/Tuna_Can.obj",
-      "size_bytes": 11920644,
-      "rendering": "double_sided"
-    },
     "paper_bowl": {
       "source_bounds_mm": [
         [
@@ -316,6 +263,59 @@
       "mesh": "texture_overrides/tea_case/mesh.glb",
       "source": "Object_3DScan_1/Osulloc/Osulloc.obj",
       "size_bytes": 6837056,
+      "rendering": "double_sided"
+    },
+    "pepper_tuna_light": {
+      "source_bounds_mm": [
+        [
+          -39.041077,
+          -41.634354,
+          -58.665047
+        ],
+        [
+          62.656,
+          62.181858,
+          39.015633
+        ]
+      ],
+      "source_extents_mm": [
+        101.69707700000001,
+        103.81621200000001,
+        97.68068
+      ],
+      "transform": "bbox_centered_mm_to_m_then_prev_frame_rigid_icp",
+      "alignment_target": "pepper_tuna_light_prev/raw_mesh/pepper_tuna_light.obj",
+      "alignment_samples": 1200,
+      "alignment_cost": 9.34264640241038e-10,
+      "alignment_transform": [
+        [
+          -0.03826965685739533,
+          0.7582357459899508,
+          0.6508563488720686,
+          0.00025501792270564894
+        ],
+        [
+          -0.01668994097708306,
+          0.6507576196872967,
+          -0.7591020789650748,
+          -0.00043648576896461466
+        ],
+        [
+          -0.9991280594769607,
+          -0.03991333012896485,
+          -0.012249360955480171,
+          0.0003936563851798236
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "mesh": "texture_overrides/pepper_tuna_light/mesh.glb",
+      "source": "Object_3DScan_1/Tuna_Can/Tuna_Can.obj",
+      "size_bytes": 11920644,
       "rendering": "double_sided"
     }
   }

@@ -1,5 +1,5 @@
 const HF_BASE = 'https://huggingface.co/datasets/willi19/object_processing/resolve/main/';
-const DATA_VERSION = '20260704-willi19-9aaa4ce-texture-double-sided-v22';
+const DATA_VERSION = '20260704-willi19-9aaa4ce-v6-tuna-tissue-v23';
 const REVIEW_DB_KEY = 'object_processing.audit.review_versions.v1';
 const REVIEW_DRAFT_KEY = 'object_processing.audit.review_draft.v1';
 const REVIEW_MANIFEST_PATH = 'reviews/manifest.json';
@@ -1033,11 +1033,60 @@ class AuditScene {
       }
       const hitBox = this.buildPoseHitBox(index);
       if (hitBox) hitBox.parent = clone;
+      const label = this.buildPoseIndexLabel(index, dx, dy, extents);
+      if (label) label.parent = group;
     });
 
     const half = (cols * spacing) / 2 + Math.max(...extents);
     this.makeFloorSlab('tabletop_floor', Math.max(half * 2, spacing * 2)).parent = group;
     this.applyReviewSelections();
+  }
+
+  buildPoseIndexLabel(index, dx, dy, extents) {
+    const maxExtent = Math.max(...extents.filter((v) => Number.isFinite(v) && v > 0), 0.08);
+    const poseIds = this.row.info && Array.isArray(this.row.info.tabletop_pose_ids)
+      ? this.row.info.tabletop_pose_ids
+      : [];
+    const poseId = poseIds[index];
+    const paddedIndex = String(index).padStart(3, '0');
+    const text = poseId && poseId !== paddedIndex ? `#${index} / ${poseId}` : `#${index}`;
+
+    const texture = new BABYLON.DynamicTexture(`pose_label_tex_${this.row.id}_${index}`, {
+      width: 384,
+      height: 160,
+    }, this.scene, true);
+    texture.hasAlpha = true;
+    texture.drawText(
+      text,
+      null,
+      98,
+      '700 72px Arial, sans-serif',
+      'white',
+      'rgba(17, 24, 39, 0.84)',
+      true,
+      true,
+    );
+
+    const material = new BABYLON.StandardMaterial(`pose_label_mat_${this.row.id}_${index}`, this.scene);
+    material.diffuseTexture = texture;
+    material.emissiveTexture = texture;
+    material.opacityTexture = texture;
+    material.useAlphaFromDiffuseTexture = true;
+    material.disableLighting = true;
+    material.backFaceCulling = false;
+    material.transparencyMode = BABYLON.Material.MATERIAL_ALPHABLEND;
+
+    const label = BABYLON.MeshBuilder.CreatePlane(`pose_label_${index}`, {
+      width: maxExtent * 0.68,
+      height: maxExtent * 0.28,
+    }, this.scene);
+    label.material = material;
+    label.position = new BABYLON.Vector3(dx, dy, maxExtent * 0.92);
+    label.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+    label.isPickable = false;
+    label.renderingGroupId = 2;
+    label.alwaysSelectAsActiveMesh = true;
+    return label;
   }
 
   standingPose() {

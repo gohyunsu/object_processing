@@ -134,7 +134,9 @@ def export_web_info(obj_name, out_path, root=None, max_poses=24):
     # Stable tabletop poses (4x4 SE3 each).
     pose_files = sorted(glob.glob(os.path.join(info_dir, "tabletop", "*.npy")))
     poses = [np.load(p).tolist() for p in pose_files[:max_poses]]
+    pose_ids = [os.path.splitext(os.path.basename(p))[0] for p in pose_files[:max_poses]]
     info["tabletop_poses"] = poses
+    info["tabletop_pose_ids"] = pose_ids
     info["n_tabletop_poses"] = len(pose_files)
 
     # Curated 'teaser' resting pose (object -> table) used for the hero shot in

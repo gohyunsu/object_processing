@@ -400,17 +400,17 @@
       "id": "pepper_tuna",
       "label": "Pepper Tuna",
       "category": "",
-      "url": "texture_overrides/pepper_tuna/mesh.glb",
-      "thumb": "objects/pepper_tuna/thumb.png",
-      "variant": "current",
-      "compare_group": "pepper_tuna"
+      "url": "objects/pepper_tuna/mesh.glb",
+      "thumb": "objects/pepper_tuna/thumb.png"
     },
     {
       "id": "pepper_tuna_light",
       "label": "Pepper Tuna Light",
       "category": "",
-      "url": "objects/pepper_tuna_light/mesh.glb",
-      "thumb": "objects/pepper_tuna_light/thumb.png"
+      "url": "texture_overrides/pepper_tuna_light/mesh.glb",
+      "thumb": "objects/pepper_tuna_light/thumb.png",
+      "variant": "current",
+      "compare_group": "pepper_tuna_light"
     },
     {
       "id": "pepsi",

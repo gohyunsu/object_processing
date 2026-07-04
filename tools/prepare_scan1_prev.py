@@ -30,7 +30,7 @@ SOURCES = {
     "paper_cup": ("PaperCup", "PaperCup"),
     "tennis_ball": ("Tennis_Ball", "Tennis_Ball"),
     "tissue_box": ("Tissue", "Tissue"),
-    "pepper_tuna": ("Tuna_Can", "Tuna_Can"),
+    "pepper_tuna_light": ("Tuna_Can", "Tuna_Can"),
     "paper_bowl": ("Paper_Soup_Bowl", "Paper_Soup_Bowl"),
     "tea_case": ("Osulloc", "Osulloc"),
 }

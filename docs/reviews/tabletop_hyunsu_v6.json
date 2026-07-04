@@ -1,0 +1,42 @@
+{
+  "schema": "object-processing-tabletop-pose-review",
+  "schema_version": 1,
+  "data_version": "20260704-willi19-9aaa4ce-v6-tuna-tissue-v23",
+  "version": "tabletop_hyunsu_v6",
+  "saved_at": "2026-07-04T06:26:25.383Z",
+  "source_url": "https://gohyunsu.github.io/object_processing/audit.html",
+  "objects": {
+    "redcar": {
+      "n_tabletop_poses": 6,
+      "note": "thumbnail"
+    },
+    "tissue_box": {
+      "n_tabletop_poses": 1,
+      "note": "axis check needed"
+    },
+    "pepsi": {
+      "n_tabletop_poses": 3,
+      "note": "thumbnail 뒤집힘"
+    },
+    "pepsi_light": {
+      "n_tabletop_poses": 3,
+      "note": "thumbnail 뒤집힘"
+    },
+    "paper_bowl": {
+      "n_tabletop_poses": 3,
+      "note": "thumbnail"
+    },
+    "white_clock": {
+      "n_tabletop_poses": 6,
+      "note": "thumbnail"
+    },
+    "white_watering_can": {
+      "n_tabletop_poses": 3,
+      "note": "thumbnail"
+    },
+    "pepper_tuna_light": {
+      "n_tabletop_poses": 3,
+      "note": "반투명, thumbnail"
+    }
+  }
+}
