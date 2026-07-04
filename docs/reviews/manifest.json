@@ -1,22 +1,12 @@
 {
   "schema": "object-processing-tabletop-pose-review-manifest",
   "schema_version": 1,
-  "default_version": "tabletop_hyunsu_v4",
+  "default_version": "tabletop_hyunsu_v5_filtered",
   "versions": [
     {
-      "name": "tabletop_hyunsu_v4",
-      "label": "tabletop_hyunsu_v4",
-      "path": "reviews/tabletop_hyunsu_v4.json"
-    },
-    {
-      "name": "tabletop_hyunsu_v3",
-      "label": "tabletop_hyunsu_v3",
-      "path": "reviews/tabletop_hyunsu_v3.json"
-    },
-    {
-      "name": "tabletop_hyunsu_v2",
-      "label": "tabletop_hyunsu_v2",
-      "path": "reviews/tabletop_hyunsu_v2.json"
+      "name": "tabletop_hyunsu_v5_filtered",
+      "label": "tabletop_hyunsu_v5_filtered",
+      "path": "reviews/tabletop_hyunsu_v5_filtered.json"
     }
   ]
 }
