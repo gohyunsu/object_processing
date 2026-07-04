@@ -30,6 +30,34 @@ def _load_symmetry(info_dir):
     return None
 
 
+def _compute_object_symmetry(obj_name, output_path, rel_tol=0.01, n_samples=4000):
+    """Compute symmetry from the highest-fidelity mesh that gives a useful axis.
+
+    The processed ``simplified.obj`` can lose rotational symmetry for noisy
+    high-resolution scans after convex decomposition/remeshing, while the raw
+    scan usually preserves it.  Some scans are the opposite, so fall back to the
+    simplified mesh only when raw reports no rotational symmetry.
+    """
+    root = obj_dir(obj_name)
+    mesh_dir = os.path.join(root, "processed_data", "mesh")
+    raw_obj = os.path.join(mesh_dir, "raw.obj")
+    raw_input = raw_obj if os.path.exists(raw_obj) else find_raw_mesh(obj_name)
+
+    sym = pipeline.compute_symmetry(
+        raw_input, output_path, rel_tol=rel_tol, n_samples=n_samples)
+    if sym.get("type") != "none":
+        return sym
+
+    simplified_obj = os.path.join(mesh_dir, "simplified.obj")
+    if os.path.exists(simplified_obj):
+        simp_sym = pipeline.compute_symmetry(
+            simplified_obj, output_path, rel_tol=rel_tol, n_samples=n_samples)
+        if simp_sym.get("type") != "none":
+            return simp_sym
+
+    return sym
+
+
 # ── per-object actions (each raises on failure) ──────────────────────────────
 
 def process_object(obj_name, skip=False, quiet=True):
@@ -70,7 +98,7 @@ def process_object(obj_name, skip=False, quiet=True):
         (simplified_obj, lambda: pipeline.change_format(
             simplified_ply, simplified_obj, keep_material=False, delete_input=True)),
         (info_path, lambda: pipeline.basic_info(simplified_obj, info_path)),
-        (symmetry_path, lambda: pipeline.compute_symmetry(simplified_obj, symmetry_path)),
+        (symmetry_path, lambda: _compute_object_symmetry(obj_name, symmetry_path)),
         # Tabletop generation always saves the per-candidate settling motion to
         # info/debug/ (the table_top viewer's "show motion" toggle reads it).
         (tabletop_dir, lambda: pipeline.generate_tabletop_poses(
@@ -97,15 +125,15 @@ def decimate_object(obj_name, target_faces=50_000, overwrite=False):
     decimate(obj_name, os.path.join(root, "raw_mesh"), out_dir, target_faces)
 
 
-def symmetry_object(obj_name, rel_tol=0.01, overwrite=False):
+def symmetry_object(obj_name, rel_tol=0.01, n_samples=4000, overwrite=False):
     """Detect rotational symmetry for one object (writes info/symmetry.json)."""
     info_dir = os.path.join(obj_dir(obj_name), "processed_data", "info")
     out_path = os.path.join(info_dir, "symmetry.json")
     if os.path.exists(out_path) and not overwrite:
         print(f"  skip (exists): {obj_name}")
         return
-    simplified_obj = os.path.join(obj_dir(obj_name), "processed_data", "mesh", "simplified.obj")
-    sym = pipeline.compute_symmetry(simplified_obj, out_path, rel_tol=rel_tol)
+    sym = _compute_object_symmetry(
+        obj_name, out_path, rel_tol=rel_tol, n_samples=n_samples)
     axes = ", ".join(
         f"{a['fold']}-fold (res {a['residual']:.4f})" for a in sym["axes"]
     ) or "none"
@@ -126,7 +154,7 @@ def tabletop_object(obj_name, max_try=200):
     # object's rotational symmetry) can be dropped — compute it if missing.
     sym_path = os.path.join(info_dir, "symmetry.json")
     if not os.path.exists(sym_path):
-        pipeline.compute_symmetry(os.path.join(mesh_dir, "simplified.obj"), sym_path)
+        _compute_object_symmetry(obj_name, sym_path)
 
     saved = pipeline.generate_tabletop_poses(
         mjcf_path, os.path.join(info_dir, "tabletop"),

@@ -24,7 +24,6 @@ import numpy as np
 import trimesh
 
 from object_processing.utils.config import obj_dir
-from object_processing.pipeline.symmetry import detect_symmetry
 from object_processing.visualization.poses import teaser_pose
 
 # Per-piece colors for the convex decomposition (RGB 0-255), matching render.py.
@@ -94,10 +93,12 @@ def export_web_info(obj_name, out_path, root=None, max_poses=24):
         info["obb"] = {"extents": s["obb"], "transform": s["obb_transform"]}
         info["gravity_center"] = s.get("gravity_center")
 
-    # Rotational symmetry (detect from the simplified mesh for consistency).
-    simp_obj = os.path.join(base, "processed_data", "mesh", "simplified.obj")
-    if os.path.exists(simp_obj):
-        sym = detect_symmetry(simp_obj)
+    # Rotational symmetry from the pipeline output.  The pipeline may choose a
+    # higher-fidelity source than simplified.obj for noisy scans.
+    sym_path = os.path.join(info_dir, "symmetry.json")
+    if os.path.exists(sym_path):
+        with open(sym_path) as f:
+            sym = json.load(f)
         info["symmetry"] = {
             "type": sym["type"],
             "center": sym["center"],

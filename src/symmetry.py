@@ -17,12 +17,14 @@ def main(argv=None):
     ap.add_argument("--all", action="store_true")
     ap.add_argument("--rel-tol", type=float, default=0.01,
                     help="acceptance threshold as a fraction of object scale")
+    ap.add_argument("--n-samples", type=int, default=4000,
+                    help="surface samples for geometric verification")
     ap.add_argument("--overwrite", action="store_true")
     a = ap.parse_args(argv)
 
     objs = resolve_objects(a.objects, a.all)
     print(f"Detecting symmetry for {len(objs)} object(s)")
-    fn = partial(symmetry_object, rel_tol=a.rel_tol, overwrite=a.overwrite)
+    fn = partial(symmetry_object, rel_tol=a.rel_tol, n_samples=a.n_samples, overwrite=a.overwrite)
     sys.exit(1 if report(run_batch(objs, fn, workers=1)) else 0)
 
 
